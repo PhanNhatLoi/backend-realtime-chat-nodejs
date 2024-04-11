@@ -1,23 +1,25 @@
-const jwt = require('jsonwebtoken')
+const jwt = require("jsonwebtoken");
 
+const auth = (req, res, next) => {
+  try {
+    const authHeader = req.header("Authorization");
+    if (!authHeader)
+      return res.status(400).json({ msg: "Authorization header is missing." });
 
-const auth = (req,res,next) =>{
-    try{
+    if (!authHeader.startsWith("Bearer "))
+      return res.status(400).json({ msg: "Invalid Authorization format." });
 
-        const token = req.header("Authorization")
-       if(!token ) return res.status(400).json({msg: "Invalid Authorization."})
+    const token = authHeader.split(" ")[1];
 
-       jwt.verify(token,process.env.ACCESS_TOKEN_SECRET,(err,user) =>{
-           if(err) return res.status(400).json({msg: "Invalid Authorization."})
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
+      if (err) return res.status(400).json({ msg: "Invalid Authorization." });
 
-           req.user = user
-           next()
-       })
+      req.user = user;
+      next();
+    });
+  } catch (err) {
+    return res.status(500).json({ msg: err.message });
+  }
+};
 
-    }catch(err){
-        return res.status(500).json({msg: err.message})
-    }
-
-}
-
-module.exports = auth
+module.exports = auth;
