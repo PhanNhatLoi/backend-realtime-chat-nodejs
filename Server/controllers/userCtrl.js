@@ -12,16 +12,18 @@ const userCtrl = {
         return res.status(400).json({ msg: "please fill in all fields." });
 
       if (!validateEmail(email))
-        return res.status(400).json({ msg: "Invalid Email." });
+        return res.status(400).json({ errors: { email: "Invalid Email." } });
 
       const user = await Users.findOne({ email });
       if (user)
-        return res.status(400).json({ msg: "this Email already exists." });
-
-      if (password.length < 6)
         return res
           .status(400)
-          .json({ msg: "password must be at least 6 character." });
+          .json({ errors: { email: "this Email already exists." } });
+
+      if (password.length < 6)
+        return res.status(400).json({
+          errors: { password: "password must be at least 6 character." },
+        });
 
       const hash = await argon2.hash(password, saltOrRounds);
 
@@ -44,19 +46,22 @@ const userCtrl = {
       const { email, password } = req.body;
 
       if (!email || !password)
-        return res.status(400).json({ msg: "please fill in all fields." });
+        return res
+          .status(400)
+          .json({ errors: { email: "please fill in all fields." } });
       const user = await Users.findOne({ email });
-      if (!user) return res.status(400).json({ msg: "Email is not ready!" });
+      if (!user)
+        return res
+          .status(400)
+          .json({ errors: { email: "Email is not ready!" } });
 
       const isMatch = await argon2.verify(user.password, password);
-      if (!isMatch) return res.status(400).json({ msg: "wrong password!" });
-      const refresh_token = createRefreshToken({ id: user._id });
-      res.cookie("refresh_token", refresh_token, {
-        httpOnly: true,
-        path: "/user/refresh_token",
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-      });
-      return res.json({ msg: "Login success!" });
+      if (!isMatch)
+        return res
+          .status(400)
+          .json({ errors: { password: "wrong password!" } });
+      const access_token = createAccessToken({ id: user.id });
+      return res.json({ _token: access_token });
     } catch (err) {
       return res.status(500).json({ msg: err.message });
     }
@@ -113,13 +118,13 @@ function validateEmail(email) {
 
 const createAccessToken = (payload) => {
   return jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, {
-    expiresIn: "15m",
+    expiresIn: "1h",
   });
 };
 
 const createRefreshToken = (payload) => {
   return jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET, {
-    expiresIn: "7d",
+    expiresIn: "1d",
   });
 };
 
