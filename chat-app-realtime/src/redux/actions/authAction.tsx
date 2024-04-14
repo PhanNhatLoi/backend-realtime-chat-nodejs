@@ -15,13 +15,6 @@ export const dispatchLogout = () => {
   };
 };
 
-export const fetchUser = async (token: string) => {
-  const res = await axios.get(`${SERVER_URL}/user/infor`, {
-    headers: { Authorization: "Bearer " + token },
-  });
-  return res;
-};
-
 export const dispatchGetUser = (res: any) => {
   return {
     type: ACTIONS.GET_USER,

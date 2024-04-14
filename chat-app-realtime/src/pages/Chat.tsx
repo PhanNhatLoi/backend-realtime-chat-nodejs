@@ -1,7 +1,8 @@
 import React from "react";
+import ApplicationsMessenger from "../components/Messenger";
 
 const Chat = () => {
-  return <div>Chat</div>;
+  return <ApplicationsMessenger />;
 };
 
 export default Chat;

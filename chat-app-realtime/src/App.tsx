@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
 import { SERVER_URL } from "./config/constant";
-import { dispatchGetUser, fetchUser } from "./redux/actions/authAction";
+import { dispatchGetUser, dispatchLogout } from "./redux/actions/authAction";
 
 function App() {
   // store value
@@ -14,9 +14,14 @@ function App() {
   const dispatch = useDispatch();
 
   const getUser = async () => {
-    return fetchUser(token).then((res) => {
+    try {
+      const res = await axios.get(`${SERVER_URL}/user/infor`, {
+        headers: { Authorization: "Bearer " + token },
+      });
       dispatch(dispatchGetUser(res));
-    });
+    } catch (error) {
+      dispatch(dispatchLogout());
+    }
   };
   useEffect(() => {
     if (token) {
