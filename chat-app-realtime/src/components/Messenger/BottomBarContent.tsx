@@ -15,10 +15,10 @@ const MessageInputWrapper = styled(InputBase)(
 function BottomBarContent() {
   const user = useSelector((state: any) => state.auth.user);
   const [message, setMessage] = useState<string>("");
-  const { pushNewMessage } = useContext(MessagesContext);
+  const { pushNewMessage, currentUserChatting } = useContext(MessagesContext);
 
   const handleSubmit = () => {
-    pushNewMessage({ user: "owner", content: message });
+    pushNewMessage({ sendTo: currentUserChatting._id, msg: message });
     setMessage("");
   };
 

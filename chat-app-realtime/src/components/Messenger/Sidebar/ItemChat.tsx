@@ -6,7 +6,7 @@ import {
   styled,
 } from "@mui/material";
 import { useContext } from "react";
-import { MessagesContext } from "../../Context/MessagesContext";
+import { MessagesContext, userType } from "../../Context/MessagesContext";
 
 const ListItemWrapper = styled(ListItemButton)(
   () => `
@@ -18,11 +18,7 @@ const ListItemWrapper = styled(ListItemButton)(
 
 type Props = {
   selected?: boolean;
-  user: {
-    name: string;
-    avatar: string;
-    id: string;
-  };
+  user: userType;
   messageLasted?: string;
   messageUnread?: number;
 };
@@ -33,7 +29,7 @@ const ItemChat = (props: Props) => {
     useContext(MessagesContext);
   return (
     <ListItemWrapper
-      selected={user.id === currentUserChatting.id}
+      selected={user._id === currentUserChatting._id}
       onClick={() => {
         setCurrentUserChatting(user);
       }}

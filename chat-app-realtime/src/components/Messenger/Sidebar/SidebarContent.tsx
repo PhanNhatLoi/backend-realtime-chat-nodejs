@@ -1,4 +1,4 @@
-import { useState, ChangeEvent } from "react";
+import { useState, ChangeEvent, useEffect } from "react";
 import {
   Box,
   Typography,
@@ -22,6 +22,9 @@ import SearchTwoToneIcon from "@mui/icons-material/SearchTwoTone";
 import CheckTwoToneIcon from "@mui/icons-material/CheckTwoTone";
 import { useSelector } from "react-redux";
 import ItemChat from "./ItemChat";
+import { userType } from "../../Context/MessagesContext";
+import axios from "axios";
+import { SERVER_URL } from "../../../config/constant";
 
 const AvatarSuccess = styled(Avatar)(
   () => `
@@ -70,6 +73,7 @@ const TabsContainerWrapper = styled(Box)(
 function SidebarContent() {
   // const
   const user = useSelector((state: any) => state.auth.user);
+  const [listUser, setListUser] = useState<userType[]>([]);
 
   const [currentTab, setCurrentTab] = useState<string>("all");
 
@@ -81,6 +85,20 @@ function SidebarContent() {
   const handleTabsChange = (_event: ChangeEvent<{}>, value: string): void => {
     setCurrentTab(value);
   };
+
+  useEffect(() => {
+    try {
+      axios
+        .get(`${SERVER_URL}/user/all_infor`, {
+          headers: { Authorization: "Bearer " + user.token },
+        })
+        .then((res) => {
+          console.log(res);
+        });
+    } catch (error) {
+      setListUser([]);
+    }
+  }, []);
 
   return (
     <div className="p-7 w-full">
@@ -135,9 +153,11 @@ function SidebarContent() {
                 <ItemChat
                   key={element}
                   user={{
-                    name: `Zain Baptista` + element,
-                    avatar: "/static/images/avatars/4.jpg",
-                    id: element.toString(),
+                    _id: "661a276a55c015162f87d945",
+                    name: "nhatloi",
+                    email: "nhatloi123@gmail.com",
+                    state: "Offline",
+                    socketId: "",
                   }}
                   messageUnread={element}
                   messageLasted="Hey there, how are you today? Is it ok if I call you?"
@@ -153,9 +173,11 @@ function SidebarContent() {
                 <ItemChat
                   key={key}
                   user={{
-                    name: "Zain Baptista",
-                    avatar: "/static/images/avatars/4.jpg",
-                    id: element.toString(),
+                    _id: "661a276a55c015162f87d945",
+                    name: "nhatloi",
+                    email: "nhatloi123@gmail.com",
+                    state: "Offline",
+                    socketId: "",
                   }}
                   messageUnread={element}
                   messageLasted="Hey there, how are you today? Is it ok if I call you?"

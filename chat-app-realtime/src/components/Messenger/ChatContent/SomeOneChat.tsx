@@ -2,7 +2,10 @@ import { Avatar, Card, styled } from "@mui/material";
 import DividerWrapper from "./DividerWrapper";
 import { format } from "date-fns";
 import { useSelector } from "react-redux";
-import { MessagesTypeContent } from "../../Context/MessagesContext";
+import {
+  MessagesTypeContent,
+  messageType,
+} from "../../Context/MessagesContext";
 const CardWrapperSecondary = styled(Card)(
   () => `
         background: rgba(34, 51, 84, 0.1);
@@ -30,10 +33,10 @@ const SomeOneChat = ({
   messages,
   groupDate,
 }: {
-  messages: MessagesTypeContent[];
+  messages: messageType[];
   groupDate: string;
 }) => {
-  const user = useSelector((state: any) => state.auth.user);
+  const idUser = useSelector((state: any) => state.auth.user)?.id || null;
 
   return (
     <>
@@ -47,43 +50,43 @@ const SomeOneChat = ({
         return (
           <div
             className={`flex items-start justify-${
-              msg.user === "owner" ? "end" : "start"
+              msg.from === idUser ? "end" : "start"
             } py-3`}
           >
             <div style={{ width: "50px" }}>
-              {msg.user !== "owner" &&
-                (index === 0 || messages[index - 1].user !== msg.user) && (
+              {msg.from === idUser &&
+                (index === 0 || messages[index - 1].from !== msg.from) && (
                   <Avatar
                     variant="rounded"
                     sx={{
                       width: 50,
                       height: 50,
                     }}
-                    alt={msg.user.name}
-                    src={msg.user.avatar}
+                    alt={"msg.user.name"}
+                    src={"msg.user.avatar"}
                   />
                 )}
             </div>
 
             <div className="flex items-start justify-start flex-col mx-2">
-              {msg.user === "owner" ? (
-                <CardWrapperPrimary>{msg.content}</CardWrapperPrimary>
+              {msg.from === idUser ? (
+                <CardWrapperPrimary>{msg.msg}</CardWrapperPrimary>
               ) : (
-                <CardWrapperSecondary>{msg.content}</CardWrapperSecondary>
+                <CardWrapperSecondary>{msg.msg}</CardWrapperSecondary>
               )}
             </div>
             <div style={{ width: "50px" }}>
-              {msg.user === "owner" &&
+              {msg.from === idUser &&
                 index !== 0 &&
-                messages[index - 1].user !== msg.user && (
+                messages[index - 1].from !== msg.from && (
                   <Avatar
                     variant="rounded"
                     sx={{
                       width: 50,
                       height: 50,
                     }}
-                    alt={user.name}
-                    src={user.avatar}
+                    alt={"user.name"}
+                    src={"user.avatar"}
                   />
                 )}
             </div>

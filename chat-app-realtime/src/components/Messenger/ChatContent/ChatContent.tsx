@@ -7,8 +7,14 @@ function ChatContent() {
 
   return (
     <div className="p-3">
-      <SomeOneChat messages={messages} groupDate={"2024-04-11T16:04:04"} />
-      <SomeOneChat messages={messages} groupDate={"2024-04-14T16:04:04"} />
+      {messages.map((mess) => {
+        return (
+          <SomeOneChat
+            messages={mess.messages}
+            groupDate={"2024-04-11T16:04:04"}
+          />
+        );
+      })}
     </div>
   );
 }
