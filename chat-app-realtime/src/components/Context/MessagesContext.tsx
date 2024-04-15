@@ -39,7 +39,7 @@ export type MessagesTypeContent = {
 type MessagesContextType = {
   messages: MessagesTypeContent[];
   currentUserChatting: userType | undefined;
-  pushNewMessage: (message: string) => void;
+  pushNewMessage: (message: messageType) => void;
   setCurrentUserChatting: React.Dispatch<
     React.SetStateAction<userType | undefined>
   >;
@@ -57,22 +57,23 @@ export function MessagesProvider({ children }: Props) {
   const [currentUserChatting, setCurrentUserChatting] = useState<
     userType | undefined
   >();
+  const socket: any = useRef();
 
   const auth = useSelector((state: any) => state.auth);
 
   const [messages, setMessages] = useState<MessagesTypeContent[]>([]);
 
-  const socket: any = useRef();
+  const userId = useSelector((state: any) => state.auth.user)?._id;
 
   useEffect(() => {
     socket.current = io(SERVER_URL);
   }, []);
 
   useEffect(() => {
-    if (auth.user?._id && socket.current) {
-      socket.current.emit("online", auth.user._id);
+    if (userId && socket.current) {
+      socket.current.emit("online", userId);
     }
-  }, [auth, socket]);
+  }, [userId, socket]);
 
   useEffect(() => {
     if (auth.token) {
@@ -83,7 +84,6 @@ export function MessagesProvider({ children }: Props) {
           })
           .then((res: any) => {
             setMessages(res.data);
-            setCurrentUserChatting(res.data[0]?.user);
           });
       } catch (error) {
         setMessages([]);
@@ -91,27 +91,40 @@ export function MessagesProvider({ children }: Props) {
     }
   }, [auth.token]);
 
-  const pushNewMessage = (message: string) => {
+  const pushNewMessage = (message: messageType) => {
+    const newMessage: messageType = {
+      ...message,
+      createdAt: new Date(Date.now()).toLocaleDateString(),
+      updatedAt: new Date(Date.now()).toLocaleDateString(),
+    };
     setMessages(
       messages.map((mess) => {
-        return mess._id === currentUserChatting?._id
+        return mess._id === message.to
           ? {
               ...mess,
-              messages: [
-                ...mess.messages,
-                {
-                  from: auth.user._id,
-                  to: currentUserChatting._id,
-                  msg: message,
-                  status: "sending",
-                  createdAt: new Date(Date.now()).toLocaleDateString(),
-                  updatedAt: new Date(Date.now()).toLocaleDateString(),
-                },
-              ],
+              messages: [...mess.messages, newMessage],
             }
           : mess;
       })
     );
+    if (message.to !== userId) {
+      try {
+        axios
+          .post(
+            `${SERVER_URL}/message/sendmsg`,
+            {
+              to: message.to,
+              msg: message.msg,
+            },
+            { headers: { Authorization: "Bearer " + auth.token } }
+          )
+          .then(() => {
+            socket.current.emit("send-msg", newMessage);
+          });
+      } catch (error) {
+        console.log(error);
+      }
+    }
   };
 
   //   fetch message

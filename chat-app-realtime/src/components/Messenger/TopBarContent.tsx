@@ -24,6 +24,7 @@ function TopBarContent() {
           sx={{
             width: 60,
             height: 60,
+            borderRadius: "50%",
           }}
           alt={currentUserChatting?.name}
           src={currentUserChatting?.avatar}

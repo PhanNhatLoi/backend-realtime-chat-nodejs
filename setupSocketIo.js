@@ -30,7 +30,7 @@ function setupSocketIo(server) {
       const userIdObject = new ObjectId(data.to);
       const sendUserSocket = await collection.findOne({ _id: userIdObject });
       if (sendUserSocket) {
-        socket.to(sendUserSocket.socketId).emit("msg-recieve", data.msg);
+        socket.to(sendUserSocket.socketId).emit("msg-recieve", data);
       }
     });
   });

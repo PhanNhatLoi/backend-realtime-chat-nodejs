@@ -15,7 +15,7 @@ const CardWrapperSecondary = styled(Card)(
         padding: 15px;
         max-width: 380px;
         display: inline-flex;
-        border-top-left-radius: 20px;
+        border-top-right-radius: 20px;
 
     `
 );
@@ -23,11 +23,12 @@ const CardWrapperSecondary = styled(Card)(
 const CardWrapperPrimary = styled(Card)(
   () => `
       background: rgb(85, 105, 255);
+      word-break: break-word;
       color: rgb(255, 255, 255);
       padding: 15px;
       max-width: 380px;
       display: inline-flex;
-      border-top-right-radius: 20px;
+      border-top-left-radius: 20px;
   `
 );
 
@@ -44,7 +45,6 @@ const SomeOneChat = ({ messages }: { messages: messageType[] }) => {
           : format(new Date(groupDate), "MMMM dd yyyy")}
       </DividerWrapper> */}
       {messages.map((msg, index) => {
-        console.log(msg, 1234);
         return (
           <div
             className={`flex items-start justify-${
