@@ -1,4 +1,14 @@
-import React, { ReactNode, createContext, useState } from "react";
+import axios from "axios";
+import React, {
+  ReactNode,
+  createContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+import { useSelector } from "react-redux";
+import { SERVER_URL } from "../../config/constant";
+import { io } from "socket.io-client";
 
 export type userType = {
   _id: string;
@@ -16,6 +26,7 @@ export type messageType = {
   from: string;
   to: string;
   msg: string;
+  status: "new" | "sending" | "sent" | "seen";
   createdAt?: string;
   updatedAt?: string;
 };
@@ -27,9 +38,11 @@ export type MessagesTypeContent = {
 
 type MessagesContextType = {
   messages: MessagesTypeContent[];
-  currentUserChatting: userType;
-  pushNewMessage: (message: { msg: string; sendTo: string }) => void;
-  setCurrentUserChatting: React.Dispatch<React.SetStateAction<userType>>;
+  currentUserChatting: userType | undefined;
+  pushNewMessage: (message: string) => void;
+  setCurrentUserChatting: React.Dispatch<
+    React.SetStateAction<userType | undefined>
+  >;
 };
 
 export const MessagesContext = createContext<MessagesContextType>(
@@ -41,80 +54,56 @@ type Props = {
 };
 
 export function MessagesProvider({ children }: Props) {
-  const [currentUserChatting, setCurrentUserChatting] = useState<userType>({
-    name: "Zain Baptista",
-    avatar: "/static/images/avatars/1.jpg",
-    _id: "1",
-    email: "",
-    state: "",
-    socketId: "",
-    createdAt: "",
-    updatedAt: "",
-  });
+  const [currentUserChatting, setCurrentUserChatting] = useState<
+    userType | undefined
+  >();
 
-  const [messages, setMessages] = useState<MessagesTypeContent[]>([
-    {
-      _id: "661a276a55c015162f87d945",
-      messages: [
-        {
-          _id: "661cb035e20b9bde7e25eae2",
-          from: "661809f4a4490454d61bc0f0",
-          to: "661a276a55c015162f87d945",
-          msg: "message to nhatloi123",
-          createdAt: "2024-04-15T04:42:29.878Z",
-          updatedAt: "2024-04-15T04:42:29.878Z",
-        },
-      ],
-      user: {
-        _id: "661a276a55c015162f87d945",
-        name: "nhatloi",
-        email: "nhatloi123@gmail.com",
-        state: "Offline",
-        socketId: "",
-        avatar:
-          "https://res.cloudinary.com/nhatloi/image/upload/v1608601448/avatar/78-785904_block-chamber-of-commerce-avatar-white-avatar-icon_b9lssx.jpg",
-        createdAt: "2024-04-13T06:34:18.310Z",
-        updatedAt: "2024-04-13T06:34:18.310Z",
-      },
-    },
-    {
-      _id: "661a2641b76a1a5b35276f53",
-      messages: [
-        {
-          _id: "661cacd37ad5c8448acead68",
-          from: "661809f4a4490454d61bc0f0",
-          to: "661a2641b76a1a5b35276f53",
-          msg: "Test message",
-          createdAt: "2024-04-15T04:28:03.446Z",
-          updatedAt: "2024-04-15T04:28:03.446Z",
-        },
-      ],
-      user: {
-        _id: "661a2641b76a1a5b35276f53",
-        name: "test",
-        email: "phanloi971@gmail.com",
-        state: "Offline",
-        socketId: "",
-        avatar:
-          "https://res.cloudinary.com/nhatloi/image/upload/v1608601448/avatar/78-785904_block-chamber-of-commerce-avatar-white-avatar-icon_b9lssx.jpg",
-        createdAt: "2024-04-13T06:29:21.539Z",
-        updatedAt: "2024-04-13T06:29:21.539Z",
-      },
-    },
-  ]);
+  const auth = useSelector((state: any) => state.auth);
 
-  const pushNewMessage = (message: { msg: string; sendTo: string }) => {
+  const [messages, setMessages] = useState<MessagesTypeContent[]>([]);
+
+  const socket: any = useRef();
+
+  useEffect(() => {
+    socket.current = io(SERVER_URL);
+  }, []);
+
+  useEffect(() => {
+    if (auth.user?._id && socket.current) {
+      socket.current.emit("online", auth.user._id);
+    }
+  }, [auth, socket]);
+
+  useEffect(() => {
+    if (auth.token) {
+      try {
+        axios
+          .get(`${SERVER_URL}/message/getallmsg`, {
+            headers: { Authorization: "Bearer " + auth.token },
+          })
+          .then((res: any) => {
+            setMessages(res.data);
+            setCurrentUserChatting(res.data[0]?.user);
+          });
+      } catch (error) {
+        setMessages([]);
+      }
+    }
+  }, [auth.token]);
+
+  const pushNewMessage = (message: string) => {
     setMessages(
       messages.map((mess) => {
-        return mess._id === message.sendTo
+        return mess._id === currentUserChatting?._id
           ? {
               ...mess,
               messages: [
                 ...mess.messages,
                 {
-                  from: "661809f4a4490454d61bc0f0",
-                  to: message.sendTo,
-                  msg: message.msg,
+                  from: auth.user._id,
+                  to: currentUserChatting._id,
+                  msg: message,
+                  status: "sending",
                   createdAt: new Date(Date.now()).toLocaleDateString(),
                   updatedAt: new Date(Date.now()).toLocaleDateString(),
                 },

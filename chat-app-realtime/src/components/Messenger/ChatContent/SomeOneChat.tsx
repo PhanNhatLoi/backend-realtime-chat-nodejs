@@ -3,9 +3,11 @@ import DividerWrapper from "./DividerWrapper";
 import { format } from "date-fns";
 import { useSelector } from "react-redux";
 import {
+  MessagesContext,
   MessagesTypeContent,
   messageType,
 } from "../../Context/MessagesContext";
+import { useContext } from "react";
 const CardWrapperSecondary = styled(Card)(
   () => `
         background: rgba(34, 51, 84, 0.1);
@@ -29,32 +31,28 @@ const CardWrapperPrimary = styled(Card)(
   `
 );
 
-const SomeOneChat = ({
-  messages,
-  groupDate,
-}: {
-  messages: messageType[];
-  groupDate: string;
-}) => {
-  const idUser = useSelector((state: any) => state.auth.user)?.id || null;
+const SomeOneChat = ({ messages }: { messages: messageType[] }) => {
+  const user = useSelector((state: any) => state.auth.user);
+  const { currentUserChatting } = useContext(MessagesContext);
 
   return (
     <>
-      <DividerWrapper>
+      {/* <DividerWrapper>
         {new Date(Date.now()).toLocaleDateString() ===
         new Date(groupDate).toLocaleDateString()
           ? "Today"
           : format(new Date(groupDate), "MMMM dd yyyy")}
-      </DividerWrapper>
+      </DividerWrapper> */}
       {messages.map((msg, index) => {
+        console.log(msg, 1234);
         return (
           <div
             className={`flex items-start justify-${
-              msg.from === idUser ? "end" : "start"
+              msg.from === user._id ? "end" : "start"
             } py-3`}
           >
             <div style={{ width: "50px" }}>
-              {msg.from === idUser &&
+              {msg.from !== user._id &&
                 (index === 0 || messages[index - 1].from !== msg.from) && (
                   <Avatar
                     variant="rounded"
@@ -62,33 +60,18 @@ const SomeOneChat = ({
                       width: 50,
                       height: 50,
                     }}
-                    alt={"msg.user.name"}
-                    src={"msg.user.avatar"}
+                    alt={currentUserChatting?.name}
+                    src={currentUserChatting?.avatar}
                   />
                 )}
             </div>
 
             <div className="flex items-start justify-start flex-col mx-2">
-              {msg.from === idUser ? (
+              {msg.from === user._id ? (
                 <CardWrapperPrimary>{msg.msg}</CardWrapperPrimary>
               ) : (
                 <CardWrapperSecondary>{msg.msg}</CardWrapperSecondary>
               )}
-            </div>
-            <div style={{ width: "50px" }}>
-              {msg.from === idUser &&
-                index !== 0 &&
-                messages[index - 1].from !== msg.from && (
-                  <Avatar
-                    variant="rounded"
-                    sx={{
-                      width: 50,
-                      height: 50,
-                    }}
-                    alt={"user.name"}
-                    src={"user.avatar"}
-                  />
-                )}
             </div>
           </div>
         );

@@ -1,6 +1,4 @@
-import { SERVER_URL } from "../../config/constant";
 import ACTIONS from "./index";
-import axios from "axios";
 
 export const dispatchLogin = (token: string) => {
   return {

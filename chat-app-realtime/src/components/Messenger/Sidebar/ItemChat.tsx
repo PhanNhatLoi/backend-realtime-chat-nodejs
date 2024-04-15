@@ -29,7 +29,7 @@ const ItemChat = (props: Props) => {
     useContext(MessagesContext);
   return (
     <ListItemWrapper
-      selected={user._id === currentUserChatting._id}
+      selected={user._id === currentUserChatting?._id}
       onClick={() => {
         setCurrentUserChatting(user);
       }}

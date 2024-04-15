@@ -4,12 +4,15 @@ const jwt = require("jsonwebtoken");
 const messageCtrl = {
   sendMsg: async (req, res) => {
     try {
-      const { from, to, msg } = req.body;
+      const token = getTokenBearer(req);
+      const { id } = jwt.decode(token);
+      const { to, msg } = req.body;
 
       const newMsg = new Message({
-        from,
+        from: id,
         to,
         msg,
+        status: "sent",
       });
 
       await newMsg.save();

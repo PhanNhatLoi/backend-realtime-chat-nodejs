@@ -72,7 +72,6 @@ const DrawerWrapperMobile = styled(Drawer)(
 );
 
 function ApplicationsMessenger() {
-  const theme = useTheme();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const handleDrawerToggle = () => {
@@ -86,7 +85,7 @@ function ApplicationsMessenger() {
           display: { lg: "none", xs: "inline-block" },
         }}
         variant="temporary"
-        anchor={theme.direction === "rtl" ? "right" : "left"}
+        anchor={"right"}
         open={mobileOpen}
         onClose={handleDrawerToggle}
       >

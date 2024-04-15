@@ -1,49 +1,20 @@
-import { useState, ChangeEvent, useEffect } from "react";
+import { useState, ChangeEvent, useEffect, useContext } from "react";
 import {
   Box,
-  Typography,
-  FormControlLabel,
-  Switch,
   Tabs,
   Tab,
   TextField,
-  IconButton,
   InputAdornment,
   Avatar,
   List,
-  Divider,
-  ListItemButton,
-  ListItemAvatar,
-  ListItemText,
   styled,
 } from "@mui/material";
-import SettingsTwoToneIcon from "@mui/icons-material/SettingsTwoTone";
 import SearchTwoToneIcon from "@mui/icons-material/SearchTwoTone";
-import CheckTwoToneIcon from "@mui/icons-material/CheckTwoTone";
 import { useSelector } from "react-redux";
 import ItemChat from "./ItemChat";
-import { userType } from "../../Context/MessagesContext";
+import { MessagesContext, userType } from "../../Context/MessagesContext";
 import axios from "axios";
 import { SERVER_URL } from "../../../config/constant";
-
-const AvatarSuccess = styled(Avatar)(
-  () => `
-          background-color: red;
-          color: black;
-          width: 20px;
-          height: 20px;
-          margin-left: auto;
-          margin-right: auto;
-    `
-);
-
-const ListItemWrapper = styled(ListItemButton)(
-  () => `
-        &.MuiButtonBase-root {
-            margin: 10px 0;
-        }
-  `
-);
 
 const TabsContainerWrapper = styled(Box)(
   () => `
@@ -73,7 +44,7 @@ const TabsContainerWrapper = styled(Box)(
 function SidebarContent() {
   // const
   const user = useSelector((state: any) => state.auth.user);
-  const [listUser, setListUser] = useState<userType[]>([]);
+  const { messages } = useContext(MessagesContext);
 
   const [currentTab, setCurrentTab] = useState<string>("all");
 
@@ -85,20 +56,6 @@ function SidebarContent() {
   const handleTabsChange = (_event: ChangeEvent<{}>, value: string): void => {
     setCurrentTab(value);
   };
-
-  useEffect(() => {
-    try {
-      axios
-        .get(`${SERVER_URL}/user/all_infor`, {
-          headers: { Authorization: "Bearer " + user.token },
-        })
-        .then((res) => {
-          console.log(res);
-        });
-    } catch (error) {
-      setListUser([]);
-    }
-  }, []);
 
   return (
     <div className="p-7 w-full">
@@ -146,46 +103,30 @@ function SidebarContent() {
       </TabsContainerWrapper>
 
       <div className="mt-2">
-        {currentTab === "all" && (
-          <List disablePadding component="div">
-            {[0, 1, 2, 3, 4, 5, 6, 7, 8].map((element) => {
+        <List disablePadding component="div">
+          {messages
+            .filter((f) =>
+              currentTab === "all"
+                ? f
+                : f.messages.some((s) => s.status !== "seen")
+            )
+            .map((element) => {
               return (
                 <ItemChat
-                  key={element}
-                  user={{
-                    _id: "661a276a55c015162f87d945",
-                    name: "nhatloi",
-                    email: "nhatloi123@gmail.com",
-                    state: "Offline",
-                    socketId: "",
-                  }}
-                  messageUnread={element}
-                  messageLasted="Hey there, how are you today? Is it ok if I call you?"
+                  key={element._id}
+                  user={element.user}
+                  messageUnread={
+                    element.messages.filter(
+                      (f) => f.status !== "seen" && f.from !== user._id
+                    ).length
+                  }
+                  messageLasted={
+                    (element.messages && element.messages[0]?.msg) || ""
+                  }
                 />
               );
             })}
-          </List>
-        )}
-        {currentTab === "unread" && (
-          <List disablePadding component="div">
-            {[1, 2, 7].map((element, key) => {
-              return (
-                <ItemChat
-                  key={key}
-                  user={{
-                    _id: "661a276a55c015162f87d945",
-                    name: "nhatloi",
-                    email: "nhatloi123@gmail.com",
-                    state: "Offline",
-                    socketId: "",
-                  }}
-                  messageUnread={element}
-                  messageLasted="Hey there, how are you today? Is it ok if I call you?"
-                />
-              );
-            })}
-          </List>
-        )}
+        </List>
       </div>
     </div>
   );

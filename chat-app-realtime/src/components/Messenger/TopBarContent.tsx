@@ -25,12 +25,12 @@ function TopBarContent() {
             width: 60,
             height: 60,
           }}
-          alt={currentUserChatting.name}
-          src={currentUserChatting.avatar}
+          alt={currentUserChatting?.name}
+          src={currentUserChatting?.avatar}
         />
         <div className="ml-2">
           <span className="text-3xl font-medium">
-            {currentUserChatting.name}
+            {currentUserChatting?.name}
           </span>
         </div>
       </div>

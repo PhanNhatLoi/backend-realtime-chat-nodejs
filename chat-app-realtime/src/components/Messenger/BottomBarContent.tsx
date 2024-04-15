@@ -18,8 +18,10 @@ function BottomBarContent() {
   const { pushNewMessage, currentUserChatting } = useContext(MessagesContext);
 
   const handleSubmit = () => {
-    pushNewMessage({ sendTo: currentUserChatting._id, msg: message });
-    setMessage("");
+    if (currentUserChatting) {
+      pushNewMessage(message);
+      setMessage("");
+    }
   };
 
   return (
