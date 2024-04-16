@@ -91,6 +91,23 @@ export function MessagesProvider({ children }: Props) {
     }
   }, [auth.token]);
 
+  useEffect(() => {
+    socket.current.on("msg-recieve", (msg: messageType) => {
+      setMessages((pre: MessagesTypeContent[]) => {
+        // Tạo một bản sao mới của messages và thêm msg vào đó
+        const newMessages = pre.map((mess) => {
+          return mess._id === msg.from
+            ? {
+                ...mess,
+                messages: [...mess.messages, msg],
+              }
+            : mess;
+        });
+        return newMessages;
+      });
+    });
+  }, []);
+
   const pushNewMessage = (message: messageType) => {
     const newMessage: messageType = {
       ...message,

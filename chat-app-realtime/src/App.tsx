@@ -14,14 +14,16 @@ function App() {
   const dispatch = useDispatch();
 
   const getUser = async () => {
-    try {
-      const res = await axios.get(`${SERVER_URL}/user/infor`, {
+    axios
+      .get(`${SERVER_URL}/user/infor`, {
         headers: { Authorization: "Bearer " + token },
+      })
+      .then((res) => {
+        dispatch(dispatchGetUser(res));
+      })
+      .catch(() => {
+        dispatch(dispatchLogout());
       });
-      dispatch(dispatchGetUser(res));
-    } catch (error) {
-      dispatch(dispatchLogout());
-    }
   };
   useEffect(() => {
     if (token) {

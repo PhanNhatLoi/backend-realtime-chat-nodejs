@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 
 import TopBarContent from "./TopBarContent";
 import BottomBarContent from "./BottomBarContent";
@@ -16,6 +16,7 @@ import {
 } from "@mui/material";
 import { Colors } from "../../config/Color";
 import Scrollbar from "../Scrollbar";
+import { MessagesContext } from "../Context/MessagesContext";
 
 const RootWrapper = styled(Box)(
   () => `
@@ -78,6 +79,8 @@ function ApplicationsMessenger() {
     setMobileOpen(!mobileOpen);
   };
 
+  const { currentUserChatting } = useContext(MessagesContext);
+
   return (
     <RootWrapper className="Mui-FixedWrapper">
       <DrawerWrapperMobile
@@ -101,31 +104,34 @@ function ApplicationsMessenger() {
           <SidebarContent />
         </Scrollbar>
       </Sidebar>
-      <ChatWindow>
-        <ChatTopBar
-          sx={{
-            display: { xs: "flex", lg: "inline-block" },
-          }}
-        >
-          <IconButtonToggle
+      {currentUserChatting && (
+        <ChatWindow>
+          <ChatTopBar
             sx={{
-              display: { lg: "none", xs: "flex" },
-              mr: 2,
+              display: { xs: "flex", lg: "inline-block" },
             }}
-            color="primary"
-            onClick={handleDrawerToggle}
-            size="small"
           >
-            <MenuTwoToneIcon />
-          </IconButtonToggle>
-          <TopBarContent />
-        </ChatTopBar>
-        <Scrollbar>
-          <ChatContent />
-        </Scrollbar>
-        <Divider />
-        <BottomBarContent />
-      </ChatWindow>
+            <IconButtonToggle
+              sx={{
+                display: { lg: "none", xs: "flex" },
+                mr: 2,
+              }}
+              color="primary"
+              onClick={handleDrawerToggle}
+              size="small"
+            >
+              <MenuTwoToneIcon />
+            </IconButtonToggle>
+            <TopBarContent />
+          </ChatTopBar>
+
+          <Scrollbar>
+            <ChatContent />
+          </Scrollbar>
+          <Divider />
+          <BottomBarContent />
+        </ChatWindow>
+      )}
     </RootWrapper>
   );
 }

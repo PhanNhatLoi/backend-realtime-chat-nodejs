@@ -1,9 +1,8 @@
 import { Avatar, Button, styled, InputBase } from "@mui/material";
 import SendTwoToneIcon from "@mui/icons-material/SendTwoTone";
 import { useSelector } from "react-redux";
-import { useContext, useEffect, useRef, useState } from "react";
-import { MessagesContext, messageType } from "../Context/MessagesContext";
-import { io } from "socket.io-client";
+import { useContext, useState } from "react";
+import { MessagesContext } from "../Context/MessagesContext";
 
 const MessageInputWrapper = styled(InputBase)(
   () => `
@@ -16,32 +15,7 @@ const MessageInputWrapper = styled(InputBase)(
 function BottomBarContent() {
   const user = useSelector((state: any) => state.auth.user);
   const [message, setMessage] = useState<string>("");
-  const { pushNewMessage, currentUserChatting, messages } =
-    useContext(MessagesContext);
-
-  const socket: any = useRef();
-
-  useEffect(() => {
-    socket.current = io("http://localhost:8000");
-  }, []);
-
-  useEffect(() => {
-    if (user?._id && socket.current) {
-      socket.current.emit("online", user._id);
-    }
-  }, [user, socket]);
-
-  useEffect(() => {
-    if (socket.current) {
-      console.log(1234);
-      socket.current.on("msg-recieve", (msg: messageType) => {
-        pushNewMessage({
-          ...msg,
-          status: "sent",
-        });
-      });
-    }
-  }, []);
+  const { pushNewMessage, currentUserChatting } = useContext(MessagesContext);
 
   const handleSubmit = () => {
     if (currentUserChatting) {

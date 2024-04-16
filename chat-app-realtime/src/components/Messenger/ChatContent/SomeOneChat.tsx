@@ -1,12 +1,6 @@
 import { Avatar, Card, styled } from "@mui/material";
-import DividerWrapper from "./DividerWrapper";
-import { format } from "date-fns";
 import { useSelector } from "react-redux";
-import {
-  MessagesContext,
-  MessagesTypeContent,
-  messageType,
-} from "../../Context/MessagesContext";
+import { MessagesContext, messageType } from "../../Context/MessagesContext";
 import { useContext } from "react";
 const CardWrapperSecondary = styled(Card)(
   () => `
