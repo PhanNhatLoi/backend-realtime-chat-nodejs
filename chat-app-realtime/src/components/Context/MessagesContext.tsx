@@ -2,6 +2,7 @@ import axios from "axios";
 import React, {
   ReactNode,
   createContext,
+  useCallback,
   useEffect,
   useRef,
   useState,
@@ -40,9 +41,9 @@ type MessagesContextType = {
   messages: MessagesTypeContent[];
   currentUserChatting: userType | undefined;
   pushNewMessage: (message: messageType) => void;
-  setCurrentUserChatting: React.Dispatch<
-    React.SetStateAction<userType | undefined>
-  >;
+  chooseUserChatting: (user: userType) => void;
+  fetchMessages: () => void;
+  listUser: userType[];
 };
 
 export const MessagesContext = createContext<MessagesContextType>(
@@ -57,6 +58,7 @@ export function MessagesProvider({ children }: Props) {
   const [currentUserChatting, setCurrentUserChatting] = useState<
     userType | undefined
   >();
+
   const socket: any = useRef();
 
   const auth = useSelector((state: any) => state.auth);
@@ -65,17 +67,29 @@ export function MessagesProvider({ children }: Props) {
 
   const userId = useSelector((state: any) => state.auth.user)?._id;
 
-  useEffect(() => {
-    socket.current = io(SERVER_URL);
-  }, []);
+  const [listUser, setListUser] = useState<userType[]>([]);
 
-  useEffect(() => {
-    if (userId && socket.current) {
-      socket.current.emit("online", userId);
-    }
-  }, [userId, socket]);
+  const chooseUserChatting = (user: userType) => {
+    setCurrentUserChatting(user);
+    socket.current.emit("read-msg", user._id);
+    setMessages(
+      messages.map((mess) => {
+        return mess._id === user._id
+          ? {
+              ...mess,
+              messages: mess.messages.map((msg) => {
+                return {
+                  ...msg,
+                  status: "seen",
+                };
+              }),
+            }
+          : mess;
+      })
+    );
+  };
 
-  useEffect(() => {
+  const fetchMessages = useCallback(() => {
     if (auth.token) {
       try {
         axios
@@ -91,10 +105,44 @@ export function MessagesProvider({ children }: Props) {
     }
   }, [auth.token]);
 
+  const fetchUsers = useCallback(() => {
+    if (auth.user) {
+      try {
+        axios
+          .get(`${SERVER_URL}/user/all_infor`, {
+            headers: { Authorization: "Bearer " + auth.token },
+          })
+          .then((res: any) => {
+            setListUser(
+              res.data.user.filter((f: userType) => f._id !== auth.user._id)
+            );
+          });
+      } catch (error) {
+        setMessages([]);
+      }
+    }
+  }, [auth.user]);
+
   useEffect(() => {
-    socket.current.on("msg-recieve", (msg: messageType) => {
+    socket.current = io(SERVER_URL);
+  }, []);
+
+  useEffect(() => {
+    if (userId && socket.current) {
+      socket.current.emit("online", userId);
+    }
+  }, [userId, socket]);
+
+  useEffect(() => {
+    if (auth.token) {
+      fetchMessages();
+      fetchUsers();
+    }
+  }, [auth.token]);
+
+  useEffect(() => {
+    socket.current.on("msg-recieve", (msg: messageType, user: userType) => {
       setMessages((pre: MessagesTypeContent[]) => {
-        // Tạo một bản sao mới của messages và thêm msg vào đó
         const newMessages = pre.map((mess) => {
           return mess._id === msg.from
             ? {
@@ -103,7 +151,16 @@ export function MessagesProvider({ children }: Props) {
               }
             : mess;
         });
-        return newMessages;
+        return !pre.some((s) => s._id === msg.from)
+          ? [
+              ...newMessages,
+              {
+                _id: msg.from,
+                messages: [msg],
+                user: user,
+              },
+            ]
+          : newMessages;
       });
     });
   }, []);
@@ -114,16 +171,29 @@ export function MessagesProvider({ children }: Props) {
       createdAt: new Date(Date.now()).toLocaleDateString(),
       updatedAt: new Date(Date.now()).toLocaleDateString(),
     };
-    setMessages(
-      messages.map((mess) => {
-        return mess._id === message.to
-          ? {
-              ...mess,
-              messages: [...mess.messages, newMessage],
-            }
-          : mess;
-      })
-    );
+    currentUserChatting &&
+      setMessages((pre: MessagesTypeContent[]) => {
+        const newMessages: MessagesTypeContent[] = pre.map(
+          (mess: MessagesTypeContent) => {
+            return mess._id === message.to
+              ? {
+                  ...mess,
+                  messages: [...mess.messages, newMessage],
+                }
+              : mess;
+          }
+        );
+        return !pre.some((s) => s._id === message.to)
+          ? [
+              ...newMessages,
+              {
+                _id: message.to,
+                messages: [newMessage],
+                user: currentUserChatting,
+              },
+            ]
+          : newMessages;
+      });
     if (message.to !== userId) {
       try {
         axios
@@ -154,7 +224,9 @@ export function MessagesProvider({ children }: Props) {
         messages,
         currentUserChatting,
         pushNewMessage,
-        setCurrentUserChatting,
+        chooseUserChatting,
+        fetchMessages,
+        listUser,
       }}
     >
       {children}

@@ -1,10 +1,12 @@
-import { Avatar, Card, styled } from "@mui/material";
+import { Card, styled } from "@mui/material";
 import { useSelector } from "react-redux";
 import { MessagesContext, messageType } from "../../Context/MessagesContext";
 import { useContext } from "react";
+import MUIAvatar from "../../MUI/Avatar";
 const CardWrapperSecondary = styled(Card)(
   () => `
         background: rgba(34, 51, 84, 0.1);
+        word-break: break-word;
         color: rgb(34, 51, 84);
         padding: 15px;
         max-width: 380px;
@@ -32,43 +34,38 @@ const SomeOneChat = ({ messages }: { messages: messageType[] }) => {
 
   return (
     <>
-      {/* <DividerWrapper>
-        {new Date(Date.now()).toLocaleDateString() ===
-        new Date(groupDate).toLocaleDateString()
-          ? "Today"
-          : format(new Date(groupDate), "MMMM dd yyyy")}
-      </DividerWrapper> */}
       {messages.map((msg, index) => {
-        return (
-          <div
-            className={`flex items-start justify-${
-              msg.from === user._id ? "end" : "start"
-            } py-3`}
-          >
-            <div style={{ width: "50px" }}>
-              {msg.from !== user._id &&
-                (index === 0 || messages[index - 1].from !== msg.from) && (
-                  <Avatar
-                    variant="rounded"
+        if (msg.from === user._id) {
+          return (
+            <div className={`flex items-start justify-end py-3`}>
+              <div style={{ width: "50px" }}></div>
+              <div className="flex items-start justify-start flex-col mx-2">
+                <CardWrapperPrimary>{msg.msg}</CardWrapperPrimary>
+              </div>
+            </div>
+          );
+        } else {
+          return (
+            <div className={`flex items-start justify-start py-3`}>
+              <div style={{ width: "50px" }}>
+                {(index === 0 || messages[index - 1].from !== msg.from) && (
+                  <MUIAvatar
                     sx={{
                       width: 50,
                       height: 50,
                     }}
                     alt={currentUserChatting?.name}
-                    src={currentUserChatting?.avatar}
+                    src={currentUserChatting?.avatar || ""}
                   />
                 )}
-            </div>
+              </div>
 
-            <div className="flex items-start justify-start flex-col mx-2">
-              {msg.from === user._id ? (
-                <CardWrapperPrimary>{msg.msg}</CardWrapperPrimary>
-              ) : (
+              <div className="flex items-start justify-start flex-col mx-2">
                 <CardWrapperSecondary>{msg.msg}</CardWrapperSecondary>
-              )}
+              </div>
             </div>
-          </div>
-        );
+          );
+        }
       })}
     </>
   );

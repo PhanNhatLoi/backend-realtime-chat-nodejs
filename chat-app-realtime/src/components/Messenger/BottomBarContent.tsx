@@ -1,8 +1,9 @@
-import { Avatar, Button, styled, InputBase } from "@mui/material";
+import { Button, styled, InputBase } from "@mui/material";
 import SendTwoToneIcon from "@mui/icons-material/SendTwoTone";
 import { useSelector } from "react-redux";
 import { useContext, useState } from "react";
 import { MessagesContext } from "../Context/MessagesContext";
+import MUIAvatar from "../MUI/Avatar";
 
 const MessageInputWrapper = styled(InputBase)(
   () => `
@@ -32,11 +33,12 @@ function BottomBarContent() {
   return (
     <div className="bg-white flex items-center p-2">
       <div className="flex items-center grow">
-        <Avatar
+        <MUIAvatar
           sx={{ display: { xs: "none", sm: "flex" }, mr: 1 }}
           alt={user.name}
           src={user.avatar}
         />
+
         <MessageInputWrapper
           autoFocus
           placeholder="Write your message here..."

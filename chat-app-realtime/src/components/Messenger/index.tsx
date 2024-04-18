@@ -6,14 +6,7 @@ import SidebarContent from "./Sidebar/SidebarContent";
 import ChatContent from "./ChatContent/ChatContent";
 import MenuTwoToneIcon from "@mui/icons-material/MenuTwoTone";
 
-import {
-  Box,
-  styled,
-  Divider,
-  Drawer,
-  IconButton,
-  useTheme,
-} from "@mui/material";
+import { Box, styled, Divider, Drawer, IconButton } from "@mui/material";
 import { Colors } from "../../config/Color";
 import Scrollbar from "../Scrollbar";
 import { MessagesContext } from "../Context/MessagesContext";
@@ -104,34 +97,32 @@ function ApplicationsMessenger() {
           <SidebarContent />
         </Scrollbar>
       </Sidebar>
-      {currentUserChatting && (
-        <ChatWindow>
-          <ChatTopBar
+      <ChatWindow>
+        <ChatTopBar
+          sx={{
+            display: { xs: "flex", lg: "inline-block" },
+          }}
+        >
+          <IconButtonToggle
             sx={{
-              display: { xs: "flex", lg: "inline-block" },
+              display: { lg: "none", xs: "flex" },
+              mr: 2,
             }}
+            color="primary"
+            onClick={handleDrawerToggle}
+            size="small"
           >
-            <IconButtonToggle
-              sx={{
-                display: { lg: "none", xs: "flex" },
-                mr: 2,
-              }}
-              color="primary"
-              onClick={handleDrawerToggle}
-              size="small"
-            >
-              <MenuTwoToneIcon />
-            </IconButtonToggle>
-            <TopBarContent />
-          </ChatTopBar>
+            <MenuTwoToneIcon />
+          </IconButtonToggle>
+          {currentUserChatting && <TopBarContent />}
+        </ChatTopBar>
 
-          <Scrollbar>
-            <ChatContent />
-          </Scrollbar>
-          <Divider />
-          <BottomBarContent />
-        </ChatWindow>
-      )}
+        <Scrollbar>
+          <ChatContent />
+        </Scrollbar>
+        <Divider />
+        <BottomBarContent />
+      </ChatWindow>
     </RootWrapper>
   );
 }

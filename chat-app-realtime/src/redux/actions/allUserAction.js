@@ -1,20 +1,8 @@
-import ACTIONS from './index'
-import axios from 'axios'
+import ACTIONS from "./index";
 
-
-export const fetchAllUsers = async(token) =>{
-    const res = await axios.get(`/user/all_infor/`,{
-        headers:{Authorization:token}
-    })
-    return res
-}
-
-
-export const dispatchGetAllUser = (res) =>{
-    return {
-        type: ACTIONS.GET_ALL_USERS,
-        payload: res.data.user
-                
-    }
-}
-
+export const dispatchGetAllUser = (res) => {
+  return {
+    type: ACTIONS.GET_ALL_USERS,
+    payload: res.data.user,
+  };
+};

@@ -31,6 +31,7 @@ const userCtrl = {
         name,
         email,
         password: hash,
+        avatar: `/cat-image-${Math.floor(Math.random() * 13) + 1}.png`,
       });
 
       await newUser.save();

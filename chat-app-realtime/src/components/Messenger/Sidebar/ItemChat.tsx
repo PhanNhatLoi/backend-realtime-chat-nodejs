@@ -1,5 +1,4 @@
 import {
-  Avatar,
   ListItemAvatar,
   ListItemButton,
   ListItemText,
@@ -7,6 +6,7 @@ import {
 } from "@mui/material";
 import { useContext } from "react";
 import { MessagesContext, userType } from "../../Context/MessagesContext";
+import MUIAvatar from "../../MUI/Avatar";
 
 const ListItemWrapper = styled(ListItemButton)(
   () => `
@@ -25,17 +25,17 @@ type Props = {
 const ItemChat = (props: Props) => {
   const { user, messageLasted = "", messageUnread = 0 } = props;
 
-  const { currentUserChatting, setCurrentUserChatting } =
+  const { currentUserChatting, chooseUserChatting } =
     useContext(MessagesContext);
   return (
     <ListItemWrapper
       selected={user._id === currentUserChatting?._id}
       onClick={() => {
-        setCurrentUserChatting(user);
+        chooseUserChatting(user);
       }}
     >
       <ListItemAvatar>
-        <Avatar src={user.avatar} />
+        <MUIAvatar src={user.avatar || ""} />
       </ListItemAvatar>
       <ListItemText
         sx={{
@@ -47,7 +47,7 @@ const ItemChat = (props: Props) => {
           noWrap: true,
         }}
         secondaryTypographyProps={{
-          color: "textSecondary",
+          color: `${messageUnread > 0 ? "textPrimary" : "textSecondary"}`,
           noWrap: true,
         }}
         primary={user.name}

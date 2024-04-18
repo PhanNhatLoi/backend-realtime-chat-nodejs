@@ -14,6 +14,7 @@ function setupSocketIo(server) {
     const client = await clientPromise;
     const db = client.db(process.env.DB_NAME);
     const collection = db.collection("users");
+    const messages = db.collection("messages");
     socket.on("online", async (userId) => {
       const userIdObject = new ObjectId(userId);
       await collection.updateOne(
@@ -28,10 +29,19 @@ function setupSocketIo(server) {
 
     socket.on("send-msg", async (data) => {
       const userIdObject = new ObjectId(data.to);
+      const fromIdUserObject = new ObjectId(data.from);
       const sendUserSocket = await collection.findOne({ _id: userIdObject });
+      const fromUser = await collection.findOne({ _id: fromIdUserObject });
       if (sendUserSocket) {
-        socket.to(sendUserSocket.socketId).emit("msg-recieve", data);
+        socket.to(sendUserSocket.socketId).emit("msg-recieve", data, fromUser);
       }
+    });
+    socket.on("read-msg", async (_id) => {
+      const userIdObject = new ObjectId(_id);
+      await messages.updateMany(
+        { from: userIdObject, status: "sent" },
+        { $set: { status: "seen" } }
+      );
     });
   });
 }
