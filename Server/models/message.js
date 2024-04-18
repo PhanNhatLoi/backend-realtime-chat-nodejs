@@ -15,6 +15,11 @@ const Message = new mongoose.Schema(
       type: String,
       required: [true, "msg is required"],
     },
+    status: {
+      type: String,
+      default: "new",
+      // value: ["new","sending","sent","seen"]
+    },
   },
   {
     timestamps: true,

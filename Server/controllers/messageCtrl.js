@@ -4,12 +4,15 @@ const jwt = require("jsonwebtoken");
 const messageCtrl = {
   sendMsg: async (req, res) => {
     try {
-      const { from, to, msg } = req.body;
+      const token = getTokenBearer(req);
+      const { id } = jwt.decode(token);
+      const { to, msg } = req.body;
 
       const newMsg = new Message({
-        from,
+        from: id,
         to,
         msg,
+        status: "sent",
       });
 
       await newMsg.save();
@@ -22,7 +25,7 @@ const messageCtrl = {
 
   getAllMsg: async (req, res) => {
     try {
-      const token = req.header("Authorization");
+      const token = getTokenBearer(req);
       const { id } = jwt.decode(token);
       const messages = await Message.aggregate([
         {
@@ -32,7 +35,7 @@ const messageCtrl = {
         },
         {
           $sort: {
-            createdAt: -1,
+            createdAt: 1,
           },
         },
         {
@@ -75,7 +78,7 @@ const messageCtrl = {
     try {
       const userId = req.header("userId");
       if (!userId) return res.json({ msg: "not found" });
-      const token = req.header("Authorization");
+      const token = getTokenBearer(req);
       const { id } = jwt.decode(token);
       const messages = await Message.aggregate([
         {
@@ -125,6 +128,11 @@ const messageCtrl = {
       return res.status(500).json({ msg: err.message });
     }
   },
+};
+
+const getTokenBearer = (req) => {
+  const token = req.header("Authorization").split(" ")[1];
+  return token || "";
 };
 
 module.exports = messageCtrl;

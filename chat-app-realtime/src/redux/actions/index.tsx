@@ -1,0 +1,9 @@
+const ACTIONS = {
+  LOGIN: "LOGIN",
+  LOGOUT: "LOGOUT",
+  // SET_CURRENT_CHAT: "SET_CURRENT_CHAT",
+  GET_USER: "GET_USER",
+  // GET_ALL_USERS: "GET_ALL_USERS",
+};
+
+export default ACTIONS;
