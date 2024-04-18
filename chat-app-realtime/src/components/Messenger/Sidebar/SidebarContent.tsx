@@ -21,17 +21,25 @@ function SidebarContent() {
         </div>
       </div>
       <Autocomplete
-        onChange={(_, val: any) => {
-          const currentUser = listUser.find((f) => f._id === val?.value);
-          currentUser && chooseUserChatting(currentUser);
-        }}
+        onChange={(_, val: any) => {}}
         freeSolo
         options={listUser.map((el) => {
-          return {
-            label: el.name,
-            value: el._id,
-          };
+          return { ...el, label: el.name };
         })}
+        renderOption={(_, val) => {
+          return (
+            <div
+              onClick={() => {
+                const currentUser = listUser.find((f) => f._id === val._id);
+                currentUser && chooseUserChatting(currentUser);
+              }}
+              className="w-full p-2 flex items-center text-3xl cursor-pointer"
+            >
+              <MUIAvatar src={val.avatar} style={{ marginRight: "5px" }} />{" "}
+              {val.name}
+            </div>
+          );
+        }}
         renderInput={(params) => (
           <TextField
             {...params}

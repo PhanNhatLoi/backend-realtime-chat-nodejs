@@ -100,7 +100,7 @@ function ApplicationsMessenger() {
       <ChatWindow>
         <ChatTopBar
           sx={{
-            display: { xs: "flex", lg: "inline-block" },
+            display: { xs: "flex", lg: "inline-block", height: "85px" },
           }}
         >
           <IconButtonToggle
@@ -121,7 +121,7 @@ function ApplicationsMessenger() {
           <ChatContent />
         </Scrollbar>
         <Divider />
-        <BottomBarContent />
+        {currentUserChatting && <BottomBarContent />}
       </ChatWindow>
     </RootWrapper>
   );
