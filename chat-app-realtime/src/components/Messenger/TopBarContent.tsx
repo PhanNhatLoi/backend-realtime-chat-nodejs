@@ -35,22 +35,6 @@ function TopBarContent() {
           </span>
         </div>
       </div>
-      <Box
-        sx={{
-          display: { xs: "none", lg: "flex" },
-        }}
-      >
-        <Tooltip placement="bottom" title="Start a voice call">
-          <IconButton color="primary">
-            <CallTwoToneIcon />
-          </IconButton>
-        </Tooltip>
-        <Tooltip placement="bottom" title="Start a video call">
-          <IconButton color="primary">
-            <VideoCameraFrontTwoToneIcon />
-          </IconButton>
-        </Tooltip>
-      </Box>
     </RootWrapper>
   );
 }

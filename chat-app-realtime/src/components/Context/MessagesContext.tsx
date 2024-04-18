@@ -168,8 +168,8 @@ export function MessagesProvider({ children }: Props) {
   const pushNewMessage = (message: messageType) => {
     const newMessage: messageType = {
       ...message,
-      createdAt: new Date(Date.now()).toLocaleDateString(),
-      updatedAt: new Date(Date.now()).toLocaleDateString(),
+      createdAt: new Date(Date.now()).toISOString(),
+      updatedAt: new Date(Date.now()).toISOString(),
     };
     currentUserChatting &&
       setMessages((pre: MessagesTypeContent[]) => {

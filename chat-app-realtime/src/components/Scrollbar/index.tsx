@@ -7,11 +7,20 @@ import { Box } from "@mui/material";
 interface ScrollbarProps {
   className?: string;
   children?: ReactNode;
+  setRef?: (ref: Scrollbars | null) => void;
 }
 
-const Scrollbar: FC<ScrollbarProps> = ({ className, children, ...rest }) => {
+const Scrollbar: FC<ScrollbarProps> = ({
+  className,
+  children,
+  setRef = () => {},
+  ...rest
+}) => {
   return (
     <Scrollbars
+      ref={(c) => {
+        setRef(c);
+      }}
       autoHide
       renderThumbVertical={() => {
         return (

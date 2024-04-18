@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 
 import TopBarContent from "./TopBarContent";
 import BottomBarContent from "./BottomBarContent";
@@ -10,6 +10,7 @@ import { Box, styled, Divider, Drawer, IconButton } from "@mui/material";
 import { Colors } from "../../config/Color";
 import Scrollbar from "../Scrollbar";
 import { MessagesContext } from "../Context/MessagesContext";
+import Scrollbars from "react-custom-scrollbars-2";
 
 const RootWrapper = styled(Box)(
   () => `
@@ -67,12 +68,20 @@ const DrawerWrapperMobile = styled(Drawer)(
 
 function ApplicationsMessenger() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [scrollbarsRef, setScrollbarsRef] = useState<Scrollbars | null>(null);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
 
-  const { currentUserChatting } = useContext(MessagesContext);
+  const { currentUserChatting, messages } = useContext(MessagesContext);
+
+  useEffect(() => {
+    if (scrollbarsRef) {
+      // scroll to bottom every chatbox show or receive a new message
+      scrollbarsRef.scrollToBottom();
+    }
+  }, [messages.find((f) => f._id === currentUserChatting?._id)]);
 
   return (
     <RootWrapper className="Mui-FixedWrapper">
@@ -81,7 +90,7 @@ function ApplicationsMessenger() {
           display: { lg: "none", xs: "inline-block" },
         }}
         variant="temporary"
-        anchor={"right"}
+        anchor={"left"}
         open={mobileOpen}
         onClose={handleDrawerToggle}
       >
@@ -100,9 +109,12 @@ function ApplicationsMessenger() {
       <ChatWindow>
         <ChatTopBar
           sx={{
-            display: { xs: "flex", lg: "inline-block", height: "85px" },
+            display: { xs: "flex", lg: "inline-block" },
+            height: "85px",
+            justifyContent: "space-between",
           }}
         >
+          {currentUserChatting ? <TopBarContent /> : <div></div>}
           <IconButtonToggle
             sx={{
               display: { lg: "none", xs: "flex" },
@@ -114,10 +126,9 @@ function ApplicationsMessenger() {
           >
             <MenuTwoToneIcon />
           </IconButtonToggle>
-          {currentUserChatting && <TopBarContent />}
         </ChatTopBar>
 
-        <Scrollbar>
+        <Scrollbar setRef={setScrollbarsRef}>
           <ChatContent />
         </Scrollbar>
         <Divider />

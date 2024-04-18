@@ -9,7 +9,7 @@ import MUIAvatar from "../../MUI/Avatar";
 function SidebarContent() {
   // const
   const user = useSelector((state: any) => state.auth.user);
-  const { messages, listUser, chooseUserChatting } =
+  const { messages, listUser, chooseUserChatting, currentUserChatting } =
     useContext(MessagesContext);
 
   return (
@@ -21,7 +21,7 @@ function SidebarContent() {
         </div>
       </div>
       <Autocomplete
-        onChange={(_, val: any) => {}}
+        onChange={(_, __: any) => {}}
         freeSolo
         options={listUser.map((el) => {
           return { ...el, label: el.name };
@@ -29,6 +29,7 @@ function SidebarContent() {
         renderOption={(_, val) => {
           return (
             <div
+              key={val._id}
               onClick={() => {
                 const currentUser = listUser.find((f) => f._id === val._id);
                 currentUser && chooseUserChatting(currentUser);

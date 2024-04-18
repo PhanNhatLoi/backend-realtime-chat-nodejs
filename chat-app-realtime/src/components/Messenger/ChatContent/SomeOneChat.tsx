@@ -1,8 +1,9 @@
 import { Card, styled } from "@mui/material";
 import { useSelector } from "react-redux";
 import { MessagesContext, messageType } from "../../Context/MessagesContext";
-import { useContext } from "react";
+import React, { useContext } from "react";
 import MUIAvatar from "../../MUI/Avatar";
+import DividerWrapper from "./DividerWrapper";
 const CardWrapperSecondary = styled(Card)(
   () => `
         background: rgba(34, 51, 84, 0.1);
@@ -35,35 +36,49 @@ const SomeOneChat = ({ messages }: { messages: messageType[] }) => {
   return (
     <>
       {messages.map((msg, index) => {
+        const dateTime =
+          msg.createdAt &&
+          (index === 0 ||
+            new Date(messages[index - 1].createdAt || "").toDateString() !==
+              new Date(msg.createdAt).toDateString())
+            ? new Date(msg.createdAt).toDateString() ===
+              new Date(Date.now()).toDateString()
+              ? "To day"
+              : new Date(msg.createdAt).toDateString()
+            : null;
         if (msg.from === user._id) {
           return (
-            <div className={`flex items-start justify-end py-3`}>
-              <div style={{ width: "50px" }}></div>
-              <div className="flex items-start justify-start flex-col mx-2">
-                <CardWrapperPrimary>{msg.msg}</CardWrapperPrimary>
+            <React.Fragment key={index}>
+              {dateTime && <DividerWrapper>{dateTime}</DividerWrapper>}
+              <div className={`flex items-start justify-end py-3`}>
+                <div className="flex items-start justify-start flex-col mx-2">
+                  <CardWrapperPrimary>{msg.msg}</CardWrapperPrimary>
+                </div>
               </div>
-            </div>
+            </React.Fragment>
           );
         } else {
           return (
-            <div className={`flex items-start justify-start py-3`}>
-              <div style={{ width: "50px" }}>
-                {(index === 0 || messages[index - 1].from !== msg.from) && (
-                  <MUIAvatar
-                    sx={{
-                      width: 50,
-                      height: 50,
-                    }}
-                    alt={currentUserChatting?.name}
-                    src={currentUserChatting?.avatar || ""}
-                  />
-                )}
+            <React.Fragment key={index}>
+              {dateTime && <DividerWrapper>{dateTime}</DividerWrapper>}
+              <div className={`flex items-start justify-start py-3`}>
+                <div style={{ width: "50px" }}>
+                  {(index === 0 || messages[index - 1].from !== msg.from) && (
+                    <MUIAvatar
+                      sx={{
+                        width: 50,
+                        height: 50,
+                      }}
+                      alt={currentUserChatting?.name}
+                      src={currentUserChatting?.avatar || ""}
+                    />
+                  )}
+                </div>
+                <div className="flex items-start justify-start flex-col mx-2">
+                  <CardWrapperSecondary>{msg.msg}</CardWrapperSecondary>
+                </div>
               </div>
-
-              <div className="flex items-start justify-start flex-col mx-2">
-                <CardWrapperSecondary>{msg.msg}</CardWrapperSecondary>
-              </div>
-            </div>
+            </React.Fragment>
           );
         }
       })}
