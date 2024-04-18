@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const setupSocketIo = require("./setupSocketIo");
+const http = require("http");
 
 const app = express();
 app.use(express.json());
@@ -30,8 +31,12 @@ app.use("/", (req, res) => {
 });
 
 const PORT = process.env.PORT || 8000;
-const server = app.listen(PORT, () => {
-  console.log("Server is running at", PORT);
-});
+const server = http.createServer(app);
+// const server = app.listen(PORT, () => {
+//   console.log("Server is running at", PORT);
+// });
 
 setupSocketIo(server);
+server.listen(PORT, () => {
+  console.log("Server is running at", PORT);
+});
