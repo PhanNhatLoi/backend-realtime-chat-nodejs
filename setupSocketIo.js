@@ -6,7 +6,7 @@ const { ObjectId } = require("mongodb");
 function setupSocketIo(server) {
   const io = socket(server, {
     cors: {
-      origin: process.env.CLIENT_URL,
+      origin: "http://localhost:3000",
       credentials: true,
     },
   });
