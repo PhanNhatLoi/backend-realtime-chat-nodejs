@@ -1,13 +1,14 @@
 require("dotenv").config();
-const socket = require("socket.io");
+// const socket = require("socket.io");
 const clientPromise = require("./lib/mongodb");
 const { ObjectId } = require("mongodb");
+const { Server } = require("socket.io");
 
 function setupSocketIo(server) {
-  const io = socket(server, {
+  const io = new Server(server, {
     cors: {
-      origin: process.env.CLIENT_URL,
-      credentials: true,
+      // origin: process.env.CLIENT_URL,
+      // credentials: true,
     },
   });
 

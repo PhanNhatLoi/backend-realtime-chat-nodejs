@@ -141,28 +141,30 @@ export function MessagesProvider({ children }: Props) {
   }, [auth.token]);
 
   useEffect(() => {
-    socket.current.on("msg-recieve", (msg: messageType, user: userType) => {
-      setMessages((pre: MessagesTypeContent[]) => {
-        const newMessages = pre.map((mess) => {
-          return mess._id === msg.from
-            ? {
-                ...mess,
-                messages: [...mess.messages, msg],
-              }
-            : mess;
+    if (socket.current) {
+      socket.current.on("msg-recieve", (msg: messageType, user: userType) => {
+        setMessages((pre: MessagesTypeContent[]) => {
+          const newMessages = pre.map((mess) => {
+            return mess._id === msg.from
+              ? {
+                  ...mess,
+                  messages: [...mess.messages, msg],
+                }
+              : mess;
+          });
+          return !pre.some((s) => s._id === msg.from)
+            ? [
+                ...newMessages,
+                {
+                  _id: msg.from,
+                  messages: [msg],
+                  user: user,
+                },
+              ]
+            : newMessages;
         });
-        return !pre.some((s) => s._id === msg.from)
-          ? [
-              ...newMessages,
-              {
-                _id: msg.from,
-                messages: [msg],
-                user: user,
-              },
-            ]
-          : newMessages;
       });
-    });
+    }
   }, []);
 
   const pushNewMessage = (message: messageType) => {
