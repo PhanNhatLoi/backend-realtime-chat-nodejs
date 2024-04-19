@@ -9,7 +9,7 @@ import MUIAvatar from "../../MUI/Avatar";
 function SidebarContent() {
   // const
   const user = useSelector((state: any) => state.auth.user);
-  const { messages, listUser, chooseUserChatting, currentUserChatting } =
+  const { messages, listUser, chooseUserChatting } =
     useContext(MessagesContext);
 
   return (

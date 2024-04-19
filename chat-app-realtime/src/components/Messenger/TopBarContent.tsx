@@ -1,7 +1,5 @@
 import { useContext } from "react";
-import { Box, IconButton, Tooltip, styled } from "@mui/material";
-import CallTwoToneIcon from "@mui/icons-material/CallTwoTone";
-import VideoCameraFrontTwoToneIcon from "@mui/icons-material/VideoCameraFrontTwoTone";
+import { Box, styled } from "@mui/material";
 import { MessagesContext } from "../Context/MessagesContext";
 import MUIAvatar from "../MUI/Avatar";
 

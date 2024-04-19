@@ -1,4 +1,4 @@
-import { TextField, TextFieldProps, TextFieldVariants } from "@mui/material";
+import { TextField, TextFieldProps } from "@mui/material";
 
 type TextFieldPropsMUI = {
   onChange: (val: string) => void;

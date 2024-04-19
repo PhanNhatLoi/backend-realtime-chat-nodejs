@@ -6,7 +6,7 @@ const { ObjectId } = require("mongodb");
 function setupSocketIo(server) {
   const io = socket(server, {
     cors: {
-      origin: "https://chat-app-realtime-orcin.vercel.app",
+      origin: process.env.CLIENT_URL,
       credentials: true,
     },
   });
