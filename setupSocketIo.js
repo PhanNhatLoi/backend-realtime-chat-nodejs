@@ -4,12 +4,26 @@ const clientPromise = require("./lib/mongodb");
 const { ObjectId } = require("mongodb");
 const { Server } = require("socket.io");
 
+const allowedOrigins = [
+  process.env.CLIENT_URL,
+  "http://localhost:3000",
+  "https://chat-app-realtime-orcin.vercel.app",
+];
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true,
+};
+
 function setupSocketIo(server) {
   const io = new Server(server, {
-    cors: {
-      // origin: process.env.CLIENT_URL,
-      // credentials: true,
-    },
+    cors: corsOptions,
   });
 
   io.on("connection", async (socket) => {
