@@ -9,7 +9,7 @@ import React, {
 } from "react";
 import { useSelector } from "react-redux";
 import { SERVER_URL } from "../../config/constant";
-import { io } from "socket.io-client";
+import { io, Socket } from "socket.io-client";
 
 export type userType = {
   _id: string;
@@ -59,7 +59,7 @@ export function MessagesProvider({ children }: Props) {
     userType | undefined
   >();
 
-  const socket: any = useRef();
+  const socket = useRef<Socket>();
 
   const auth = useSelector((state: any) => state.auth);
 
@@ -71,7 +71,7 @@ export function MessagesProvider({ children }: Props) {
 
   const chooseUserChatting = (user: userType) => {
     setCurrentUserChatting(user);
-    socket.current.emit("read-msg", user._id);
+    socket.current?.emit("read-msg", user._id);
     setMessages(
       messages.map((mess) => {
         return mess._id === user._id
@@ -125,6 +125,10 @@ export function MessagesProvider({ children }: Props) {
 
   useEffect(() => {
     socket.current = io(SERVER_URL);
+
+    return () => {
+      socket.current?.close();
+    };
   }, []);
 
   useEffect(() => {
@@ -208,7 +212,7 @@ export function MessagesProvider({ children }: Props) {
             { headers: { Authorization: "Bearer " + auth.token } }
           )
           .then(() => {
-            socket.current.emit("send-msg", newMessage);
+            socket.current?.emit("send-msg", newMessage);
           });
       } catch (error) {
         console.log(error);
