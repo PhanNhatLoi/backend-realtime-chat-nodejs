@@ -1,4 +1,4 @@
-import { FC, ReactNode } from "react";
+import { FC, ReactNode, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
 import { Scrollbars } from "react-custom-scrollbars-2";
 
@@ -7,20 +7,26 @@ import { Box } from "@mui/material";
 interface ScrollbarProps {
   className?: string;
   children?: ReactNode;
-  setRef?: (ref: Scrollbars | null) => void;
+  autoScroll?: boolean;
 }
 
 const Scrollbar: FC<ScrollbarProps> = ({
   className,
   children,
-  setRef = () => {},
+  autoScroll = false,
   ...rest
 }) => {
+  const scrollbarsRef = useRef<Scrollbars>(null);
+
+  useEffect(() => {
+    if (autoScroll && scrollbarsRef.current) {
+      scrollbarsRef.current.scrollToBottom();
+    }
+  }, [scrollbarsRef.current?.getScrollHeight()]);
+
   return (
     <Scrollbars
-      ref={(c) => {
-        setRef(c);
-      }}
+      ref={scrollbarsRef}
       autoHide
       renderThumbVertical={() => {
         return (

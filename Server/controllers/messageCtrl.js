@@ -26,7 +26,7 @@ const messageCtrl = {
 
       const message = await newMsg.save();
       const fromUser = await Users.findById(id);
-      pusher.trigger(to, "send-msg", { msg: message, user: fromUser });
+      pusher.trigger(to, "receive-msg", { msg: message, user: fromUser });
       pusher.trigger(id, "sent-msg", { msg: message });
       res.json({ msg: "send message success" });
     } catch (err) {

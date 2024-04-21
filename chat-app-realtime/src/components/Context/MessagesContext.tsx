@@ -43,7 +43,7 @@ type MessagesContextType = {
   messages: MessagesTypeContent[];
   currentUserChatting: userType | undefined;
   pushNewMessage: (message: messageType) => void;
-  chooseUserChatting: (user: userType) => void;
+  chooseUserChatting: (user?: userType) => void;
   fetchMessages: () => void;
   listUser: userType[];
 };
@@ -69,39 +69,140 @@ export function MessagesProvider({ children }: Props) {
 
   const [listUser, setListUser] = useState<userType[]>([]);
 
-  const chooseUserChatting = (user: userType) => {
-    setCurrentUserChatting(user);
-    try {
-      axios
-        .post(
-          `${SERVER_URL}/message/read-msg`,
-          {}, //body null
-          {
-            headers: {
-              Authorization: "Bearer " + auth.token,
-              userId: user._id,
-            },
-          }
-        )
-        .then(() => {
-          setMessages(
-            messages.map((mess) => {
-              return mess._id === user._id
-                ? {
-                    ...mess,
-                    messages: mess.messages.map((msg) => {
-                      return {
-                        ...msg,
-                        status: "seen",
-                      };
-                    }),
-                  }
-                : mess;
-            })
+  const [refresh, setRefresh] = useState<boolean>(false);
+
+  const [actionToRefresh, setActionToRefresh] = useState<
+    | {
+        action: "sent-msg" | "receive-msg";
+        msg: messageType;
+        user?: userType;
+      }
+    | undefined
+  >();
+
+  //
+  const handleRefreshMessages = async () => {
+    // sent done msg
+    if (actionToRefresh?.action === "sent-msg") {
+      setMessages((pre) => {
+        let temp = pre;
+        const index = temp.findIndex((f) => f._id === actionToRefresh.msg.to);
+        if (index >= 0) {
+          const msgIndex = temp[index].messages.findIndex(
+            (f) => f._id === actionToRefresh.msg._id
           );
-        });
-    } catch (error) {
-      console.log(error);
+          if (msgIndex >= 0) {
+            temp[index].messages[msgIndex] = actionToRefresh.msg;
+          } else {
+            if (temp[index].messages[temp[index].messages.length - 1]._id) {
+              temp[index].messages = [
+                ...temp[index].messages,
+                actionToRefresh.msg,
+              ];
+            } else {
+              temp[index].messages[temp[index].messages.length - 1] =
+                actionToRefresh.msg;
+            }
+          }
+        }
+        return temp;
+      });
+    }
+
+    // receive msg
+    if (actionToRefresh?.action === "receive-msg") {
+      let temp = messages;
+      let index = temp.findIndex((f) => f._id === actionToRefresh.msg.from);
+      if (index >= 0) {
+        temp[index].messages = [...temp[index].messages, actionToRefresh.msg];
+      } else {
+        // this is first message
+        if (actionToRefresh.user) {
+          temp = [
+            ...temp,
+            {
+              _id: actionToRefresh.user._id,
+              messages: [actionToRefresh.msg],
+              user: actionToRefresh.user,
+            },
+          ];
+        }
+      }
+
+      // case chat current === new user message send
+      if (currentUserChatting?._id === actionToRefresh.user?._id) {
+        try {
+          await axios
+            .post(
+              `${SERVER_URL}/message/read-msg`,
+              {}, //body null
+              {
+                headers: {
+                  Authorization: "Bearer " + auth.token,
+                  userId: actionToRefresh.user?._id,
+                },
+              }
+            )
+            .then(() => {
+              const msgIndex = temp[index].messages.findIndex(
+                (f) => f._id === actionToRefresh.msg._id
+              );
+              temp[index].messages[msgIndex].status = "seen";
+            });
+        } catch (error) {
+          console.log(error);
+        }
+      }
+
+      setMessages(temp);
+    }
+    setRefresh(false);
+    setActionToRefresh(undefined);
+  };
+
+  useEffect(() => {
+    if (refresh) {
+      handleRefreshMessages();
+    }
+  }, [refresh]);
+
+  const chooseUserChatting = (user?: userType) => {
+    if (user) {
+      setCurrentUserChatting(user);
+      try {
+        axios
+          .post(
+            `${SERVER_URL}/message/read-msg`,
+            {}, //body null
+            {
+              headers: {
+                Authorization: "Bearer " + auth.token,
+                userId: user._id,
+              },
+            }
+          )
+          .then(() => {
+            setMessages(
+              messages.map((mess) => {
+                return mess._id === user._id
+                  ? {
+                      ...mess,
+                      messages: mess.messages.map((msg) => {
+                        return {
+                          ...msg,
+                          status: "seen",
+                        };
+                      }),
+                    }
+                  : mess;
+              })
+            );
+          });
+      } catch (error) {
+        console.log(error);
+      }
+    } else {
+      setCurrentUserChatting(undefined);
     }
   };
 
@@ -153,106 +254,24 @@ export function MessagesProvider({ children }: Props) {
 
       // event send-msg from user
       channelUser.bind(
-        "send-msg",
+        "receive-msg",
         ({ msg, user }: { msg: messageType; user: userType }) => {
-          if (user._id === currentUserChatting?._id) {
-            try {
-              axios
-                .post(
-                  `${SERVER_URL}/message/read-msg`,
-                  {}, //body null
-                  {
-                    headers: {
-                      Authorization: "Bearer " + auth.token,
-                      userId: user._id,
-                    },
-                  }
-                )
-                .then(() => {
-                  setMessages((pre: MessagesTypeContent[]) => {
-                    const newMessages = pre.map((mess) => {
-                      return mess._id === msg.from
-                        ? {
-                            ...mess,
-                            messages: [
-                              ...mess.messages,
-                              {
-                                ...msg,
-                                status: "seen" as statusMessageType,
-                              },
-                            ],
-                          }
-                        : mess;
-                    });
-                    return !pre.some((s) => s._id === msg.from)
-                      ? [
-                          ...newMessages,
-                          {
-                            _id: msg.from,
-                            messages: [msg],
-                            user: user,
-                          },
-                        ]
-                      : newMessages;
-                  });
-                });
-            } catch (error) {
-              setMessages((pre: MessagesTypeContent[]) => {
-                const newMessages = pre.map((mess) => {
-                  return mess._id === msg.from
-                    ? {
-                        ...mess,
-                        messages: [...mess.messages, msg],
-                      }
-                    : mess;
-                });
-                return !pre.some((s) => s._id === msg.from)
-                  ? [
-                      ...newMessages,
-                      {
-                        _id: msg.from,
-                        messages: [msg],
-                        user: user,
-                      },
-                    ]
-                  : newMessages;
-              });
-            }
-          } else {
-            setMessages((pre: MessagesTypeContent[]) => {
-              const newMessages = pre.map((mess) => {
-                return mess._id === msg.from
-                  ? {
-                      ...mess,
-                      messages: [...mess.messages, msg],
-                    }
-                  : mess;
-              });
-              return !pre.some((s) => s._id === msg.from)
-                ? [
-                    ...newMessages,
-                    {
-                      _id: msg.from,
-                      messages: [msg],
-                      user: user,
-                    },
-                  ]
-                : newMessages;
-            });
-          }
+          setActionToRefresh({
+            action: "receive-msg",
+            msg: msg,
+            user: user,
+          });
+          setRefresh(true);
         }
       );
 
       // event send-done
       channelUser.bind("sent-msg", ({ msg }: { msg: messageType }) => {
-        setMessages((pre) => {
-          let temp = pre;
-          const index = temp.findIndex((f) => f._id === msg.to);
-          if (index >= 0) {
-            temp[index].messages[temp[index].messages.length - 1] = msg;
-          }
-          return temp;
+        setActionToRefresh({
+          action: "sent-msg",
+          msg: msg,
         });
+        setRefresh(true);
       });
 
       return () => {

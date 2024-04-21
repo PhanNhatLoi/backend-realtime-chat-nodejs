@@ -68,7 +68,7 @@ const DrawerWrapperMobile = styled(Drawer)(
 
 function ApplicationsMessenger() {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [scrollbarsRef, setScrollbarsRef] = useState<Scrollbars | null>(null);
+  // const [scrollbarsRef, setScrollbarsRef] = useState<Scrollbars | null>(null);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -76,12 +76,13 @@ function ApplicationsMessenger() {
 
   const { currentUserChatting, messages } = useContext(MessagesContext);
 
-  useEffect(() => {
-    if (scrollbarsRef) {
-      // scroll to bottom every chatbox show or receive a new message
-      scrollbarsRef.scrollToBottom();
-    }
-  }, [messages.find((f) => f._id === currentUserChatting?._id)]);
+  // useEffect(() => {
+  //   console.log(1234);
+  //   if (scrollbarsRef) {
+  //     // scroll to bottom every chatbox show or receive a new message
+  //     scrollbarsRef.scrollToBottom();
+  //   }
+  // }, [messages]);
 
   return (
     <RootWrapper className="Mui-FixedWrapper">
@@ -128,7 +129,7 @@ function ApplicationsMessenger() {
           </IconButtonToggle>
         </ChatTopBar>
 
-        <Scrollbar setRef={setScrollbarsRef}>
+        <Scrollbar autoScroll>
           <ChatContent />
         </Scrollbar>
         <Divider />

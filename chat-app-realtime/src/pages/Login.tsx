@@ -1,7 +1,7 @@
 // using MUI and formik for UI and submit form
 // using yup check validate value
 import { Formik } from "formik";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import MUILoadingButton from "../components/MUI/LoadingButton";
 import * as Yup from "yup";
 import MUITextField from "../components/MUI/MUITextField";
@@ -11,6 +11,7 @@ import { useDispatch } from "react-redux";
 import { dispatchLogin } from "../redux/actions/authAction";
 import { useNavigate } from "react-router-dom";
 import { PATH } from "../components/routerPath";
+import { MessagesContext } from "../components/Context/MessagesContext";
 
 const LoginPage = () => {
   // const
@@ -19,6 +20,8 @@ const LoginPage = () => {
 
   // state
   const [loading, setLoading] = useState<boolean>(false); //loading action submit
+
+  const { chooseUserChatting } = useContext(MessagesContext);
 
   const schema = Yup.object({
     email: Yup.string().required(),
@@ -39,6 +42,7 @@ const LoginPage = () => {
                 password: values.password,
               })
               .then((res) => {
+                chooseUserChatting(undefined);
                 dispatch(dispatchLogin(res.data._token));
               })
               .catch((err) => actions.setErrors(err.response.data.errors))
