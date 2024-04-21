@@ -8,8 +8,14 @@ import React, {
   useState,
 } from "react";
 import { useSelector } from "react-redux";
-import { SERVER_URL } from "../../config/constant";
-import { io, Socket } from "socket.io-client";
+import {
+  SERVER_URL,
+  pusher_channel,
+  pusher_cluster,
+  pusher_key,
+} from "../../config/constant";
+import Pusher from "pusher-js";
+// import { io, Socket } from "socket.io-client";
 
 export type userType = {
   _id: string;
@@ -59,7 +65,7 @@ export function MessagesProvider({ children }: Props) {
     userType | undefined
   >();
 
-  const socket = useRef<Socket>();
+  // const socket = useRef<Socket>();
 
   const auth = useSelector((state: any) => state.auth);
 
@@ -71,7 +77,7 @@ export function MessagesProvider({ children }: Props) {
 
   const chooseUserChatting = (user: userType) => {
     setCurrentUserChatting(user);
-    socket.current?.emit("read-msg", user._id);
+    // socket.current?.emit("read-msg", user._id);
     setMessages(
       messages.map((mess) => {
         return mess._id === user._id
@@ -124,18 +130,40 @@ export function MessagesProvider({ children }: Props) {
   }, [auth.user]);
 
   useEffect(() => {
-    socket.current = io(SERVER_URL);
+    const pusher = new Pusher(pusher_key, {
+      cluster: pusher_cluster,
+      channelAuthorization: {
+        endpoint: SERVER_URL,
+        transport: "ajax",
+      },
+    });
 
+    const channel = pusher.subscribe(pusher_channel);
+
+    channel.bind("send-msg", (data: any) => {
+      console.log("Received event with data:", data, 1234);
+    });
+
+    // Return một hàm clean-up để ngắt kết nối khi component unmounts
     return () => {
-      socket.current?.close();
+      pusher.unsubscribe(pusher_channel);
+      pusher.disconnect();
     };
   }, []);
 
-  useEffect(() => {
-    if (userId && socket.current) {
-      socket.current.emit("online", userId);
-    }
-  }, [userId, socket]);
+  // useEffect(() => {
+  //   socket.current = io(SERVER_URL);
+
+  //   return () => {
+  //     socket.current?.close();
+  //   };
+  // }, []);
+
+  // useEffect(() => {
+  //   if (userId && socket.current) {
+  //     socket.current.emit("online", userId);
+  //   }
+  // }, [userId, socket]);
 
   useEffect(() => {
     if (auth.token) {
@@ -144,32 +172,32 @@ export function MessagesProvider({ children }: Props) {
     }
   }, [auth.token]);
 
-  useEffect(() => {
-    if (socket.current) {
-      socket.current.on("msg-recieve", (msg: messageType, user: userType) => {
-        setMessages((pre: MessagesTypeContent[]) => {
-          const newMessages = pre.map((mess) => {
-            return mess._id === msg.from
-              ? {
-                  ...mess,
-                  messages: [...mess.messages, msg],
-                }
-              : mess;
-          });
-          return !pre.some((s) => s._id === msg.from)
-            ? [
-                ...newMessages,
-                {
-                  _id: msg.from,
-                  messages: [msg],
-                  user: user,
-                },
-              ]
-            : newMessages;
-        });
-      });
-    }
-  }, []);
+  // useEffect(() => {
+  //   if (socket.current) {
+  //     socket.current.on("msg-recieve", (msg: messageType, user: userType) => {
+  //       setMessages((pre: MessagesTypeContent[]) => {
+  //         const newMessages = pre.map((mess) => {
+  //           return mess._id === msg.from
+  //             ? {
+  //                 ...mess,
+  //                 messages: [...mess.messages, msg],
+  //               }
+  //             : mess;
+  //         });
+  //         return !pre.some((s) => s._id === msg.from)
+  //           ? [
+  //               ...newMessages,
+  //               {
+  //                 _id: msg.from,
+  //                 messages: [msg],
+  //                 user: user,
+  //               },
+  //             ]
+  //           : newMessages;
+  //       });
+  //     });
+  //   }
+  // }, []);
 
   const pushNewMessage = (message: messageType) => {
     const newMessage: messageType = {
@@ -212,7 +240,7 @@ export function MessagesProvider({ children }: Props) {
             { headers: { Authorization: "Bearer " + auth.token } }
           )
           .then(() => {
-            socket.current?.emit("send-msg", newMessage);
+            // socket.current?.emit("send-msg", newMessage);
           });
       } catch (error) {
         console.log(error);

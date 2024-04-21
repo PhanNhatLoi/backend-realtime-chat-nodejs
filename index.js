@@ -3,7 +3,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
-const setupSocketIo = require("./setupSocketIo");
+// const setupSocketIo = require("./setupSocketIo");
 const http = require("http");
 
 const app = express();
@@ -33,7 +33,7 @@ app.use("/", (req, res) => {
 const PORT = process.env.PORT || 8000;
 const server = http.createServer(app);
 
-setupSocketIo(server);
+// setupSocketIo(server);
 server.listen(PORT, () => {
   console.log("Server is running at", PORT);
 });

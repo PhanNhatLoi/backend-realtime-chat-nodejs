@@ -1,6 +1,14 @@
 const { ObjectId } = require("mongodb");
 const Message = require("../models/message");
 const jwt = require("jsonwebtoken");
+const Pusher = require("pusher");
+
+const pusher = new Pusher({
+  appId: process.env.pusher_appId,
+  key: process.env.pusher_key,
+  secret: process.env.pusher_secret,
+  cluster: process.env.pusher_cluster,
+});
 const messageCtrl = {
   sendMsg: async (req, res) => {
     try {
@@ -15,7 +23,8 @@ const messageCtrl = {
         status: "sent",
       });
 
-      await newMsg.save();
+      const message = await newMsg.save();
+      pusher.trigger(process.env.pusher_channel, "send-msg", message);
 
       res.json({ msg: "send message success" });
     } catch (err) {
