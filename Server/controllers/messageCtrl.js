@@ -2,6 +2,7 @@ const { ObjectId } = require("mongodb");
 const Message = require("../models/message");
 const jwt = require("jsonwebtoken");
 const Pusher = require("pusher");
+const Users = require("../models/user");
 
 const pusher = new Pusher({
   appId: process.env.pusher_appId,
@@ -24,8 +25,9 @@ const messageCtrl = {
       });
 
       const message = await newMsg.save();
-      pusher.trigger(process.env.pusher_channel, "send-msg", message);
-
+      const fromUser = await Users.findById(id);
+      pusher.trigger(to, "send-msg", { msg: message, user: fromUser });
+      pusher.trigger(id, "sent-msg", { msg: message });
       res.json({ msg: "send message success" });
     } catch (err) {
       return res.status(500).json({ msg: err.message });
@@ -133,6 +135,21 @@ const messageCtrl = {
       ]);
 
       return res.json(...messages);
+    } catch (err) {
+      return res.status(500).json({ msg: err.message });
+    }
+  },
+
+  readMsg: async (req, res) => {
+    try {
+      const userId = req.header("userId");
+      if (!userId) return res.json({ msg: "not found" });
+      const userIdObject = new ObjectId(userId);
+      await Message.updateMany(
+        { from: userIdObject, status: "sent" },
+        { $set: { status: "seen" } }
+      );
+      return res.json({ msg: "success" });
     } catch (err) {
       return res.status(500).json({ msg: err.message });
     }

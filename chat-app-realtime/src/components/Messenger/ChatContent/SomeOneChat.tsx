@@ -51,8 +51,13 @@ const SomeOneChat = ({ messages }: { messages: messageType[] }) => {
             <React.Fragment key={index}>
               {dateTime && <DividerWrapper>{dateTime}</DividerWrapper>}
               <div className={`flex items-start justify-end py-3`}>
-                <div className="flex items-start justify-start flex-col mx-2">
+                <div className="flex items-end justify-start flex-col mx-2">
                   <CardWrapperPrimary>{msg.msg}</CardWrapperPrimary>
+                  {/* {index === messages.length - 1 && (
+                    <span className="w-full text-right text-sm text-gray-500">
+                      {msg.status}
+                    </span>
+                  )} */}
                 </div>
               </div>
             </React.Fragment>

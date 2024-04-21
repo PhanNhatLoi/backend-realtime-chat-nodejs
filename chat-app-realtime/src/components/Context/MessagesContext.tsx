@@ -4,16 +4,10 @@ import React, {
   createContext,
   useCallback,
   useEffect,
-  useRef,
   useState,
 } from "react";
 import { useSelector } from "react-redux";
-import {
-  SERVER_URL,
-  pusher_channel,
-  pusher_cluster,
-  pusher_key,
-} from "../../config/constant";
+import { SERVER_URL, pusher_cluster, pusher_key } from "../../config/constant";
 import Pusher from "pusher-js";
 // import { io, Socket } from "socket.io-client";
 
@@ -33,10 +27,12 @@ export type messageType = {
   from: string;
   to: string;
   msg: string;
-  status: "new" | "sending" | "sent" | "seen";
+  status: statusMessageType;
   createdAt?: string;
   updatedAt?: string;
 };
+
+export type statusMessageType = "new" | "sending..." | "sent" | "seen";
 export type MessagesTypeContent = {
   _id: string;
   messages: messageType[];
@@ -65,8 +61,6 @@ export function MessagesProvider({ children }: Props) {
     userType | undefined
   >();
 
-  // const socket = useRef<Socket>();
-
   const auth = useSelector((state: any) => state.auth);
 
   const [messages, setMessages] = useState<MessagesTypeContent[]>([]);
@@ -77,29 +71,45 @@ export function MessagesProvider({ children }: Props) {
 
   const chooseUserChatting = (user: userType) => {
     setCurrentUserChatting(user);
-    // socket.current?.emit("read-msg", user._id);
-    setMessages(
-      messages.map((mess) => {
-        return mess._id === user._id
-          ? {
-              ...mess,
-              messages: mess.messages.map((msg) => {
-                return {
-                  ...msg,
-                  status: "seen",
-                };
-              }),
-            }
-          : mess;
-      })
-    );
+    try {
+      axios
+        .post(
+          `${SERVER_URL}/message/read-msg`,
+          {}, //body null
+          {
+            headers: {
+              Authorization: "Bearer " + auth.token,
+              userId: user._id,
+            },
+          }
+        )
+        .then(() => {
+          setMessages(
+            messages.map((mess) => {
+              return mess._id === user._id
+                ? {
+                    ...mess,
+                    messages: mess.messages.map((msg) => {
+                      return {
+                        ...msg,
+                        status: "seen",
+                      };
+                    }),
+                  }
+                : mess;
+            })
+          );
+        });
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const fetchMessages = useCallback(() => {
     if (auth.token) {
       try {
         axios
-          .get(`${SERVER_URL}/message/getallmsg`, {
+          .get(`${SERVER_URL}/message/get-all-msg`, {
             headers: { Authorization: "Bearer " + auth.token },
           })
           .then((res: any) => {
@@ -129,41 +139,128 @@ export function MessagesProvider({ children }: Props) {
     }
   }, [auth.user]);
 
+  // realtime event
   useEffect(() => {
-    const pusher = new Pusher(pusher_key, {
-      cluster: pusher_cluster,
-      channelAuthorization: {
-        endpoint: SERVER_URL,
-        transport: "ajax",
-      },
-    });
+    if (userId) {
+      const pusher = new Pusher(pusher_key, {
+        cluster: pusher_cluster,
+        channelAuthorization: {
+          endpoint: SERVER_URL,
+          transport: "ajax",
+        },
+      });
+      const channelUser = pusher.subscribe(userId);
 
-    const channel = pusher.subscribe(pusher_channel);
+      // event send-msg from user
+      channelUser.bind(
+        "send-msg",
+        ({ msg, user }: { msg: messageType; user: userType }) => {
+          if (user._id === currentUserChatting?._id) {
+            try {
+              axios
+                .post(
+                  `${SERVER_URL}/message/read-msg`,
+                  {}, //body null
+                  {
+                    headers: {
+                      Authorization: "Bearer " + auth.token,
+                      userId: user._id,
+                    },
+                  }
+                )
+                .then(() => {
+                  setMessages((pre: MessagesTypeContent[]) => {
+                    const newMessages = pre.map((mess) => {
+                      return mess._id === msg.from
+                        ? {
+                            ...mess,
+                            messages: [
+                              ...mess.messages,
+                              {
+                                ...msg,
+                                status: "seen" as statusMessageType,
+                              },
+                            ],
+                          }
+                        : mess;
+                    });
+                    return !pre.some((s) => s._id === msg.from)
+                      ? [
+                          ...newMessages,
+                          {
+                            _id: msg.from,
+                            messages: [msg],
+                            user: user,
+                          },
+                        ]
+                      : newMessages;
+                  });
+                });
+            } catch (error) {
+              setMessages((pre: MessagesTypeContent[]) => {
+                const newMessages = pre.map((mess) => {
+                  return mess._id === msg.from
+                    ? {
+                        ...mess,
+                        messages: [...mess.messages, msg],
+                      }
+                    : mess;
+                });
+                return !pre.some((s) => s._id === msg.from)
+                  ? [
+                      ...newMessages,
+                      {
+                        _id: msg.from,
+                        messages: [msg],
+                        user: user,
+                      },
+                    ]
+                  : newMessages;
+              });
+            }
+          } else {
+            setMessages((pre: MessagesTypeContent[]) => {
+              const newMessages = pre.map((mess) => {
+                return mess._id === msg.from
+                  ? {
+                      ...mess,
+                      messages: [...mess.messages, msg],
+                    }
+                  : mess;
+              });
+              return !pre.some((s) => s._id === msg.from)
+                ? [
+                    ...newMessages,
+                    {
+                      _id: msg.from,
+                      messages: [msg],
+                      user: user,
+                    },
+                  ]
+                : newMessages;
+            });
+          }
+        }
+      );
 
-    channel.bind("send-msg", (data: any) => {
-      console.log("Received event with data:", data, 1234);
-    });
+      // event send-done
+      channelUser.bind("sent-msg", ({ msg }: { msg: messageType }) => {
+        setMessages((pre) => {
+          let temp = pre;
+          const index = temp.findIndex((f) => f._id === msg.to);
+          if (index >= 0) {
+            temp[index].messages[temp[index].messages.length - 1] = msg;
+          }
+          return temp;
+        });
+      });
 
-    // Return một hàm clean-up để ngắt kết nối khi component unmounts
-    return () => {
-      pusher.unsubscribe(pusher_channel);
-      pusher.disconnect();
-    };
-  }, []);
-
-  // useEffect(() => {
-  //   socket.current = io(SERVER_URL);
-
-  //   return () => {
-  //     socket.current?.close();
-  //   };
-  // }, []);
-
-  // useEffect(() => {
-  //   if (userId && socket.current) {
-  //     socket.current.emit("online", userId);
-  //   }
-  // }, [userId, socket]);
+      return () => {
+        pusher.unsubscribe(userId);
+        pusher.disconnect();
+      };
+    }
+  }, [userId, currentUserChatting]);
 
   useEffect(() => {
     if (auth.token) {
@@ -172,40 +269,15 @@ export function MessagesProvider({ children }: Props) {
     }
   }, [auth.token]);
 
-  // useEffect(() => {
-  //   if (socket.current) {
-  //     socket.current.on("msg-recieve", (msg: messageType, user: userType) => {
-  //       setMessages((pre: MessagesTypeContent[]) => {
-  //         const newMessages = pre.map((mess) => {
-  //           return mess._id === msg.from
-  //             ? {
-  //                 ...mess,
-  //                 messages: [...mess.messages, msg],
-  //               }
-  //             : mess;
-  //         });
-  //         return !pre.some((s) => s._id === msg.from)
-  //           ? [
-  //               ...newMessages,
-  //               {
-  //                 _id: msg.from,
-  //                 messages: [msg],
-  //                 user: user,
-  //               },
-  //             ]
-  //           : newMessages;
-  //       });
-  //     });
-  //   }
-  // }, []);
-
   const pushNewMessage = (message: messageType) => {
     const newMessage: messageType = {
       ...message,
       createdAt: new Date(Date.now()).toISOString(),
       updatedAt: new Date(Date.now()).toISOString(),
     };
-    currentUserChatting &&
+
+    if (message.to !== userId && currentUserChatting) {
+      // send message before call api status is sending...
       setMessages((pre: MessagesTypeContent[]) => {
         const newMessages: MessagesTypeContent[] = pre.map(
           (mess: MessagesTypeContent) => {
@@ -228,29 +300,21 @@ export function MessagesProvider({ children }: Props) {
             ]
           : newMessages;
       });
-    if (message.to !== userId) {
+
       try {
-        axios
-          .post(
-            `${SERVER_URL}/message/sendmsg`,
-            {
-              to: message.to,
-              msg: message.msg,
-            },
-            { headers: { Authorization: "Bearer " + auth.token } }
-          )
-          .then(() => {
-            // socket.current?.emit("send-msg", newMessage);
-          });
+        axios.post(
+          `${SERVER_URL}/message/send-msg`,
+          {
+            to: message.to,
+            msg: message.msg,
+          },
+          { headers: { Authorization: "Bearer " + auth.token } }
+        );
       } catch (error) {
         console.log(error);
       }
     }
   };
-
-  //   fetch message
-
-  //   fetch message
 
   return (
     <MessagesContext.Provider

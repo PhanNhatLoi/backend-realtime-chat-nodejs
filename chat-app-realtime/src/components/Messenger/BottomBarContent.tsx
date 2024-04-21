@@ -24,7 +24,7 @@ function BottomBarContent() {
         from: user._id,
         to: currentUserChatting?._id || "",
         msg: message,
-        status: "sending",
+        status: "sending...",
       });
       setMessage("");
     }
