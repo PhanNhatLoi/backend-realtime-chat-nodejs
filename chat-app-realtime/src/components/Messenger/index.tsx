@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useState } from "react";
 
 import TopBarContent from "./TopBarContent";
 import BottomBarContent from "./BottomBarContent";
@@ -10,7 +10,6 @@ import { Box, styled, Divider, Drawer, IconButton } from "@mui/material";
 import { Colors } from "../../config/Color";
 import Scrollbar from "../Scrollbar";
 import { MessagesContext } from "../Context/MessagesContext";
-import Scrollbars from "react-custom-scrollbars-2";
 
 const RootWrapper = styled(Box)(
   () => `
@@ -39,7 +38,7 @@ const ChatWindow = styled(Box)(
 
 const ChatTopBar = styled(Box)(
   () => `
-        background: ${Colors.Gray_01};
+        background: rgb(85, 105, 255);
         border-bottom: ${Colors.Gray_02} solid 1px;
         padding: 10px;
         align-items: center;
@@ -68,21 +67,12 @@ const DrawerWrapperMobile = styled(Drawer)(
 
 function ApplicationsMessenger() {
   const [mobileOpen, setMobileOpen] = useState(false);
-  // const [scrollbarsRef, setScrollbarsRef] = useState<Scrollbars | null>(null);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
 
-  const { currentUserChatting, messages } = useContext(MessagesContext);
-
-  // useEffect(() => {
-  //   console.log(1234);
-  //   if (scrollbarsRef) {
-  //     // scroll to bottom every chatbox show or receive a new message
-  //     scrollbarsRef.scrollToBottom();
-  //   }
-  // }, [messages]);
+  const { currentUserChatting } = useContext(MessagesContext);
 
   return (
     <RootWrapper className="Mui-FixedWrapper">

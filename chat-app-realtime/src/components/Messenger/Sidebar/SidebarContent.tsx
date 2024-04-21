@@ -11,7 +11,6 @@ function SidebarContent() {
   const user = useSelector((state: any) => state.auth.user);
   const { messages, listUser, chooseUserChatting } =
     useContext(MessagesContext);
-
   return (
     <div className="p-7 w-full">
       <div className="flex items-center justify-between">

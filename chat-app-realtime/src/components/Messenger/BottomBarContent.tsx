@@ -54,6 +54,7 @@ function BottomBarContent() {
       </div>
       <div>
         <Button
+          disabled={!message}
           onClick={handleSubmit}
           startIcon={<SendTwoToneIcon />}
           variant="contained"

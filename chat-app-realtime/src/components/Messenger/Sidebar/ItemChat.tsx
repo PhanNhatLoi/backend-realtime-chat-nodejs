@@ -29,6 +29,7 @@ const ItemChat = (props: Props) => {
     useContext(MessagesContext);
   return (
     <ListItemWrapper
+      className="shadow-md rounded"
       selected={user._id === currentUserChatting?._id}
       onClick={() => {
         chooseUserChatting(user);

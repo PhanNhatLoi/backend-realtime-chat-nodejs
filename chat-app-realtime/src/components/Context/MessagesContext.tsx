@@ -213,8 +213,11 @@ export function MessagesProvider({ children }: Props) {
           .get(`${SERVER_URL}/message/get-all-msg`, {
             headers: { Authorization: "Bearer " + auth.token },
           })
-          .then((res: any) => {
+          .then((res: { data: MessagesTypeContent[] }) => {
             setMessages(res.data);
+            if (res.data.length > 0) {
+              setCurrentUserChatting(res.data[0].user);
+            }
           });
       } catch (error) {
         setMessages([]);
