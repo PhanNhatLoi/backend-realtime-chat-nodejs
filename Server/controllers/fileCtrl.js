@@ -1,7 +1,8 @@
-const cloudinary = require("cloudinary");
+const cloudinary = require("cloudinary").v2;
 const fs = require("fs");
 const imageFolder = "image";
 const https = require("https");
+const streamifier = require("streamifier");
 
 cloudinary.config({
   cloud_name: process.env.CLOUD_NAME,
@@ -12,22 +13,25 @@ cloudinary.config({
 const uploadCtrl = {
   uploadAvatar: async (req, res) => {
     try {
-      const file = req.files.file;
-      cloudinary.v2.uploader.upload(
-        file.tempFilePath,
+      const file = req.file;
+      let stream = cloudinary.uploader.upload_stream(
         {
           folder: imageFolder,
           width: 150,
           height: 150,
           crop: "fill",
         },
-        async (err, result) => {
-          if (err) throw err;
-          removeTmp(file.tempFilePath);
+        (err, result) => {
+          if (err) {
+            return res.status(500).send(err);
+          }
           const pathName = result.secure_url.split("/");
           res.json({ path: pathName[pathName.length - 1] });
         }
       );
+
+      // Chuyển đổi buffer thành stream và tải lên Cloudinary
+      streamifier.createReadStream(file.buffer).pipe(stream);
     } catch (err) {
       return res.status(500).json({ msg: err.message });
     }
