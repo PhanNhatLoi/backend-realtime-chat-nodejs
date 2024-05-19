@@ -1,7 +1,16 @@
 const Users = require("../models/user");
 const argon2 = require("argon2");
 const jwt = require("jsonwebtoken");
+const { ObjectId } = require("mongodb");
 const saltOrRounds = 10;
+const Pusher = require("pusher");
+require("dotenv").config();
+const pusher = new Pusher({
+  appId: process.env.pusher_appId,
+  key: process.env.pusher_key,
+  secret: process.env.pusher_secret,
+  cluster: process.env.pusher_cluster,
+});
 
 const userCtrl = {
   register: async (req, res) => {
@@ -33,6 +42,8 @@ const userCtrl = {
         password: hash,
         avatar: `/cat-image-${Math.floor(Math.random() * 13) + 1}.png`,
       });
+
+      pusher.trigger(process.env.pusher_channel, "user-register", {});
 
       await newUser.save();
 
@@ -105,6 +116,53 @@ const userCtrl = {
     try {
       res.clearCookie("refresh_token", { path: "/user/refresh_token" });
       return res.json({ msg: "logout!" });
+    } catch (err) {
+      return res.status(500).json({ msg: err.message });
+    }
+  },
+  updateUser: async (req, res) => {
+    try {
+      const { name, avatar } = req.body;
+      await Users.findOneAndUpdate(
+        { _id: req.user.id },
+        {
+          name,
+          avatar,
+        }
+      );
+      pusher.trigger(req.user.id, "user-update", {});
+
+      return res.json({ msg: "update success!" });
+    } catch (err) {
+      return res.status(500).json({ msg: err.message });
+    }
+  },
+  changePassword: async (req, res) => {
+    try {
+      const { password, currentPassword } = req.body;
+      const user = await Users.findById(new ObjectId(req.user.id));
+      if (!user)
+        return res
+          .status(400)
+          .json({ errors: { email: "Email is not ready!" } });
+
+      const isMatch = await argon2.verify(user.password, currentPassword);
+
+      if (!isMatch)
+        return res
+          .status(400)
+          .json({ errors: { currentPassword: "Password wrong!" } });
+
+      const hash = await argon2.hash(password, saltOrRounds);
+      await Users.findOneAndUpdate(
+        { _id: req.user.id },
+        {
+          password: hash,
+        }
+      );
+      pusher.trigger(req.user.id, "user-change-password", {});
+
+      return res.json({ msg: "change password success!" });
     } catch (err) {
       return res.status(500).json({ msg: err.message });
     }

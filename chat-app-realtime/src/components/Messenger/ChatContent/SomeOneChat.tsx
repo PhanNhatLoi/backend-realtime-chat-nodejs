@@ -5,9 +5,10 @@ import React, { useContext } from "react";
 import MUIAvatar from "../../MUI/Avatar";
 import DividerWrapper from "./DividerWrapper";
 import { MoreVert } from "@mui/icons-material";
+import ActionMenu from "./ActionMenu";
 const CardWrapperSecondary = styled(Card)(
-  () => `
-        background: rgba(34, 51, 84, 0.1);
+  ({ deleted }: { deleted?: boolean }) => `
+        background: rgba(34, 51, 84, ${deleted ? "0.2" : "0.1"});
         word-break: break-word;
         color: rgb(34, 51, 84);
         padding: 15px;
@@ -19,8 +20,8 @@ const CardWrapperSecondary = styled(Card)(
 );
 
 const CardWrapperPrimary = styled(Card)(
-  () => `
-      background: rgb(85, 105, 255);
+  ({ deleted }: { deleted?: boolean }) => `
+      background: ${deleted ? "rgba(34, 51, 84, 0.1)" : "rgb(85, 105, 255)"};
       word-break: break-word;
       color: rgb(255, 255, 255);
       padding: 15px;
@@ -68,11 +69,13 @@ const SomeOneChat = ({ messages }: { messages: messageType[] }) => {
             <React.Fragment key={index}>
               {dateTime && <DividerWrapper>{dateTime}</DividerWrapper>}
               <ContentMessage className={`flex items-start justify-end py-3`}>
-                <div className="action">
-                  <MoreVert />
-                </div>
+                {msg.status !== "deleted" && (
+                  <ActionMenu transform="right" msgId={msg._id || ""} />
+                )}
                 <div className="flex items-end justify-start flex-col mx-2">
-                  <CardWrapperPrimary>{msg.msg}</CardWrapperPrimary>
+                  <CardWrapperPrimary deleted={msg.status === "deleted"}>
+                    {msg.msg}
+                  </CardWrapperPrimary>
                   {index === messages.length - 1 && (
                     <span className="w-full text-right text-sm text-gray-500">
                       {msg.status}
@@ -100,11 +103,13 @@ const SomeOneChat = ({ messages }: { messages: messageType[] }) => {
                   )}
                 </div>
                 <div className="flex items-start justify-start flex-col mx-2">
-                  <CardWrapperSecondary>{msg.msg}</CardWrapperSecondary>
+                  <CardWrapperSecondary deleted={msg.status === "deleted"}>
+                    {msg.msg}
+                  </CardWrapperSecondary>
                 </div>
-                <div className="action">
-                  <MoreVert />
-                </div>
+                {msg.status !== "deleted" && (
+                  <ActionMenu transform="left" msgId={msg._id || ""} />
+                )}
               </ContentMessage>
             </React.Fragment>
           );

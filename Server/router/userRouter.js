@@ -14,4 +14,8 @@ router.get("/all_infor", auth, userCtrl.getAllUserInfor);
 
 router.post("/logout", userCtrl.logout);
 
+router.patch("/update", auth, userCtrl.updateUser);
+
+router.put("/change_password", auth, userCtrl.changePassword);
+
 module.exports = router;

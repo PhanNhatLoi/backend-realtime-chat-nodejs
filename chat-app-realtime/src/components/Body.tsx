@@ -5,6 +5,8 @@ import Register from "../pages/Register";
 import { useSelector } from "react-redux";
 import { PATH } from "./routerPath";
 import Chat from "../pages/Chat";
+import Profile from "../pages/Profile";
+import ChangePassword from "../pages/ChangePassword";
 
 const Body = () => {
   const token = useSelector((state: any) => state.auth.token);
@@ -23,6 +25,14 @@ const Body = () => {
         <Route
           path={PATH.CHAT}
           element={!token ? <Navigate to={PATH.LOGIN} /> : <Chat />}
+        />
+        <Route
+          path={PATH.PROFILE}
+          element={!token ? <Navigate to={PATH.LOGIN} /> : <Profile />}
+        />
+        <Route
+          path={PATH.CHANGE_PASSWORD}
+          element={!token ? <Navigate to={PATH.LOGIN} /> : <ChangePassword />}
         />
         <Route path="*" element={<Navigate to={PATH.HOME} />} />
       </Routes>

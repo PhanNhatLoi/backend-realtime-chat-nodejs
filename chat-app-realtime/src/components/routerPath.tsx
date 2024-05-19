@@ -3,4 +3,6 @@ export const PATH = {
   REGISTER: "/register",
   HOME: "/",
   CHAT: "/chat",
+  PROFILE: "/profile",
+  CHANGE_PASSWORD: "/changePassword",
 };

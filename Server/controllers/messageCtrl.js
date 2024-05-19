@@ -154,6 +154,23 @@ const messageCtrl = {
       return res.status(500).json({ msg: err.message });
     }
   },
+
+  removeMsg: async (req, res) => {
+    try {
+      const msg = await Message.findOne({
+        _id: new ObjectId(req.params.id),
+        from: req.user.id,
+      });
+      if (!msg) return res.status(404).json({ msg: "msg not found" });
+      await Message.findOneAndUpdate({
+        status: "deleted",
+        msg: "message deleted",
+      });
+      return res.json({ msg: "delete success!" });
+    } catch (err) {
+      return res.status(500).json({ msg: err.message });
+    }
+  },
 };
 
 const getTokenBearer = (req) => {
