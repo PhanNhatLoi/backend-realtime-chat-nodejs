@@ -7,5 +7,6 @@ router.post("/send-msg", auth, messageCtrl.sendMsg);
 router.get("/get-all-msg", auth, messageCtrl.getAllMsg);
 router.get("/get-msg", auth, messageCtrl.getMsg);
 router.post("/read-msg", auth, messageCtrl.readMsg);
+router.delete("/remove-msg/:id", auth, messageCtrl.removeMsg);
 
 module.exports = router;

@@ -1,10 +1,9 @@
-import React from "react";
 import MUILoadingButton from "../components/MUI/LoadingButton";
-import { useDispatch, useSelector } from "react-redux";
-import { dispatchLogout } from "../redux/actions/authAction";
+import { useSelector } from "react-redux";
 import { styled } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { PATH } from "../components/routerPath";
+import AccountMenu from "../components/Messenger/Sidebar/AccountMenu";
 
 const HeaderStyled = styled("div")(
   () => `
@@ -32,20 +31,13 @@ const ContainerStyled = styled("div")(
 
 const Home = () => {
   // const
-  const dispatch = useDispatch();
   const navigate = useNavigate();
   const user = useSelector((state: any) => state.auth.user);
   return (
     <div className="w-screen h-screen flex flex-wrap justify-center items-center text-center">
       <HeaderStyled>
         {user ? (
-          <MUILoadingButton
-            onClick={() => {
-              dispatch(dispatchLogout());
-            }}
-          >
-            Logout
-          </MUILoadingButton>
+          <AccountMenu source={user.avatar} transform="right" />
         ) : (
           <MUILoadingButton
             onClick={() => {

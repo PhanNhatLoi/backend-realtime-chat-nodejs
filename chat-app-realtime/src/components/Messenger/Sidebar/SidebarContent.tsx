@@ -5,6 +5,7 @@ import { useSelector } from "react-redux";
 import ItemChat from "./ItemChat";
 import { MessagesContext } from "../../Context/MessagesContext";
 import MUIAvatar from "../../MUI/Avatar";
+import AccountMenu from "./AccountMenu";
 
 function SidebarContent() {
   // const
@@ -14,7 +15,7 @@ function SidebarContent() {
   return (
     <div className="p-7 w-full">
       <div className="flex items-center justify-between">
-        <MUIAvatar alt={user.name} src={user.avatar} />
+        <AccountMenu source={user.avatar} />
         <div className="ml-5 text-4xl">
           <span>{user.name}</span>
         </div>

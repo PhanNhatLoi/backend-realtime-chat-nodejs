@@ -7,7 +7,12 @@ import React, {
   useState,
 } from "react";
 import { useSelector } from "react-redux";
-import { SERVER_URL, pusher_cluster, pusher_key } from "../../config/constant";
+import {
+  SERVER_URL,
+  pusher_channel,
+  pusher_cluster,
+  pusher_key,
+} from "../../config/constant";
 import Pusher from "pusher-js";
 // import { io, Socket } from "socket.io-client";
 
@@ -32,7 +37,12 @@ export type messageType = {
   updatedAt?: string;
 };
 
-export type statusMessageType = "new" | "sending..." | "sent" | "seen";
+export type statusMessageType =
+  | "new"
+  | "sending..."
+  | "sent"
+  | "seen"
+  | "deleted";
 export type MessagesTypeContent = {
   _id: string;
   messages: messageType[];
@@ -226,7 +236,7 @@ export function MessagesProvider({ children }: Props) {
   }, [auth.token]);
 
   const fetchUsers = useCallback(() => {
-    if (auth.user) {
+    if (auth.token && auth.user) {
       try {
         axios
           .get(`${SERVER_URL}/user/all_infor`, {
@@ -238,10 +248,10 @@ export function MessagesProvider({ children }: Props) {
             );
           });
       } catch (error) {
-        setMessages([]);
+        setListUser([]);
       }
     }
-  }, [auth.user]);
+  }, [auth]);
 
   // realtime event
   useEffect(() => {
@@ -254,6 +264,17 @@ export function MessagesProvider({ children }: Props) {
         },
       });
       const channelUser = pusher.subscribe(userId);
+
+      const channelApp = pusher.subscribe(pusher_channel);
+      // event send-msg from user
+      channelApp.bind("user-register", () => {
+        fetchUsers();
+      });
+
+      // event update info from user
+      channelUser.bind("user-update", () => {
+        // fetchUsers();
+      });
 
       // event send-msg from user
       channelUser.bind(
@@ -279,6 +300,7 @@ export function MessagesProvider({ children }: Props) {
 
       return () => {
         pusher.unsubscribe(userId);
+        pusher.unsubscribe(pusher_channel);
         pusher.disconnect();
       };
     }
