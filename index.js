@@ -5,18 +5,12 @@ const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const http = require("http");
 const bodyParser = require("body-parser");
-const fileUpload = require("express-fileupload");
 
 const app = express();
 app.use(express.json());
 app.use(cors());
 app.use(cookieParser());
 app.use(bodyParser.json());
-app.use(
-  fileUpload({
-    useTempFiles: true,
-  })
-);
 
 // Router
 app.use("/user", require("./Server/router/userRouter"));
