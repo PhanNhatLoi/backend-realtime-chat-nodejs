@@ -37,6 +37,32 @@ const uploadCtrl = {
     }
   },
 
+  uploadImage: async (req, res) => {
+    try {
+      const file = req.file;
+      let stream = cloudinary.uploader.upload_stream(
+        {
+          folder: imageFolder,
+          // width: 150,
+          // height: 150,
+          // crop: "fill",
+        },
+        (err, result) => {
+          if (err) {
+            return res.status(500).send(err);
+          }
+          const pathName = result.secure_url.split("/");
+          res.json({ path: pathName[pathName.length - 1] });
+        }
+      );
+
+      // Chuyển đổi buffer thành stream và tải lên Cloudinary
+      streamifier.createReadStream(file.buffer).pipe(stream);
+    } catch (err) {
+      return res.status(500).json({ msg: err.message });
+    }
+  },
+
   getImage: async (req, res) => {
     const name = req.params.name;
     if (!name) return res.status(400).json({ msg: "Image not fount" });

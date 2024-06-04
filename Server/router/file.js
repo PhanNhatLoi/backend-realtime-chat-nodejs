@@ -12,6 +12,13 @@ router.post(
   upload.single("file"),
   uploadCtrl.uploadAvatar
 );
+
+router.post(
+  "/upload-image-free",
+  upload.single("file"),
+  uploadCtrl.uploadImage
+);
+
 router.get("/:name", uploadCtrl.getImage);
 
 module.exports = router;
