@@ -37,7 +37,8 @@ const LoginPage = () => {
           onSubmit={async (values, actions) => {
             setLoading(true);
             axios
-              .post(`${SERVER_URL}/user/login`, {
+              .post(`http://192.168.1.208:8000/auth/sign-in`, {
+                // .post(`${SERVER_URL}/user/login`, {
                 email: values.email,
                 password: values.password,
               })
