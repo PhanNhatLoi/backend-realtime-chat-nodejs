@@ -20,6 +20,10 @@ const Message = new mongoose.Schema(
       default: "new",
       // value: ["new","sending","sent","seen"]
     },
+    react: {
+      type: String,
+      default: "",
+    },
   },
   {
     timestamps: true,

@@ -74,7 +74,9 @@ function SidebarContent() {
                 user={element.user}
                 messageUnread={
                   element.messages.filter(
-                    (f) => f.status !== "seen" && f.from !== user._id
+                    (f) =>
+                      !["seen", "deleted"].includes(f.status) &&
+                      f.from !== user._id
                   ).length
                 }
                 messageLasted={

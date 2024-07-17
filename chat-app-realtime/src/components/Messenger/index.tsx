@@ -72,7 +72,7 @@ function ApplicationsMessenger() {
     setMobileOpen(!mobileOpen);
   };
 
-  const { currentUserChatting } = useContext(MessagesContext);
+  const { currentUserChatting, fetchMessageMore } = useContext(MessagesContext);
 
   return (
     <RootWrapper className="Mui-FixedWrapper">
@@ -119,7 +119,12 @@ function ApplicationsMessenger() {
           </IconButtonToggle>
         </ChatTopBar>
 
-        <Scrollbar autoScroll>
+        <Scrollbar
+          autoScroll
+          onScrollTop={() => {
+            currentUserChatting && fetchMessageMore(currentUserChatting?._id);
+          }}
+        >
           <ChatContent />
         </Scrollbar>
         <Divider />

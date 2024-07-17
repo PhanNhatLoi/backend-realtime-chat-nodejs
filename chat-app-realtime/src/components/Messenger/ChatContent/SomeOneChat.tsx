@@ -4,30 +4,46 @@ import { MessagesContext, messageType } from "../../Context/MessagesContext";
 import React, { useContext } from "react";
 import MUIAvatar from "../../MUI/Avatar";
 import DividerWrapper from "./DividerWrapper";
-import { MoreVert } from "@mui/icons-material";
 import ActionMenu from "./ActionMenu";
+import { Emoji, EmojiStyle } from "emoji-picker-react";
 const CardWrapperSecondary = styled(Card)(
-  ({ deleted }: { deleted?: boolean }) => `
-        background: rgba(34, 51, 84, ${deleted ? "0.2" : "0.1"});
+  ({ deleted }: { deleted?: boolean }) =>
+    `
+        background: rgba(34, 51, 84, 0.1);
         word-break: break-word;
-        color: rgb(34, 51, 84);
+        color: rgba(34, 51, 84, 1);
         padding: 15px;
         max-width: 380px;
         display: inline-flex;
         border-top-right-radius: 20px;
-
+        ${
+          deleted &&
+          `
+            box-shadow: none;
+            background: rgba(34, 51, 84, 0.2);
+            color: rgba(34, 51, 84, 0.2);
+          `
+        }
     `
 );
 
 const CardWrapperPrimary = styled(Card)(
   ({ deleted }: { deleted?: boolean }) => `
-      background: ${deleted ? "rgba(34, 51, 84, 0.1)" : "rgb(85, 105, 255)"};
+      background: rgb(85, 105, 255);
       word-break: break-word;
       color: rgb(255, 255, 255);
       padding: 15px;
       max-width: 380px;
       display: inline-flex;
       border-top-left-radius: 20px;
+      ${
+        deleted &&
+        `
+          box-shadow: none;
+          background: rgba(34, 51, 84, 0.2);
+          color: rgba(34, 51, 84, 0.2);
+        `
+      }
   `
 );
 
@@ -35,15 +51,31 @@ const ContentMessage = styled("div")(
   () => `
   display: flex;
   align-items: center;
+
+   .emoji {
+    transform: translate(0, -10px);
+    width:100%;
+    display:flex;
+    flex-direction: row;
+    }
+    
+    .emoji .icon {
+      background: white;
+      border-radius: 20px;
+      padding: 2px;
+    }
+
   .action {
     display: none;
   }
     :hover {
       .action {
-        display: block;
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
       }
     }
-
   `
 );
 
@@ -70,12 +102,24 @@ const SomeOneChat = ({ messages }: { messages: messageType[] }) => {
               {dateTime && <DividerWrapper>{dateTime}</DividerWrapper>}
               <ContentMessage className={`flex items-start justify-end py-3`}>
                 {msg.status !== "deleted" && (
-                  <ActionMenu transform="right" msgId={msg._id || ""} />
+                  <>
+                    <ActionMenu owner transform="right" msg={msg} />
+                  </>
                 )}
                 <div className="flex items-end justify-start flex-col mx-2">
                   <CardWrapperPrimary deleted={msg.status === "deleted"}>
                     {msg.msg}
                   </CardWrapperPrimary>
+                  {msg.react && msg.status !== "deleted" && (
+                    <div
+                      className="emoji"
+                      style={{ justifyContent: "flex-start" }}
+                    >
+                      <div className="icon">
+                        <Emoji unified={msg.react} size={20} />
+                      </div>
+                    </div>
+                  )}
                   {index === messages.length - 1 && (
                     <span className="w-full text-right text-sm text-gray-500">
                       {msg.status}
@@ -106,9 +150,21 @@ const SomeOneChat = ({ messages }: { messages: messageType[] }) => {
                   <CardWrapperSecondary deleted={msg.status === "deleted"}>
                     {msg.msg}
                   </CardWrapperSecondary>
+                  {msg.react && msg.status !== "deleted" && (
+                    <div
+                      className="emoji"
+                      style={{ justifyContent: "flex-end" }}
+                    >
+                      <div className="icon">
+                        <Emoji unified={msg.react} size={20} />
+                      </div>
+                    </div>
+                  )}
                 </div>
                 {msg.status !== "deleted" && (
-                  <ActionMenu transform="left" msgId={msg._id || ""} />
+                  <>
+                    <ActionMenu owner={false} transform="left" msg={msg} />
+                  </>
                 )}
               </ContentMessage>
             </React.Fragment>

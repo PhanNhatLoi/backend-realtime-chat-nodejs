@@ -46,7 +46,7 @@ const messageCtrl = {
         },
         {
           $sort: {
-            createdAt: 1,
+            createdAt: -1,
           },
         },
         {
@@ -59,6 +59,17 @@ const messageCtrl = {
               },
             },
             messages: { $push: "$$ROOT" },
+            totalMessage: { $sum: 1 },
+          },
+        },
+        {
+          $addFields: {
+            messages: { $slice: ["$messages", 10] },
+          },
+        },
+        {
+          $addFields: {
+            messages: { $reverseArray: "$messages" },
           },
         },
         {
@@ -88,6 +99,9 @@ const messageCtrl = {
   getMsg: async (req, res) => {
     try {
       const userId = req.header("userId");
+      const page = parseInt(req.query.page) || 1;
+      const limit = parseInt(req.params.limit) || 10;
+      const skip = (page - 1) * limit;
       if (!userId) return res.json({ msg: "not found" });
       const token = getTokenBearer(req);
       const { id } = jwt.decode(token);
@@ -99,7 +113,7 @@ const messageCtrl = {
         },
         {
           $sort: {
-            createdAt: 1,
+            createdAt: -1,
           },
         },
         {
@@ -112,6 +126,11 @@ const messageCtrl = {
               },
             },
             messages: { $push: "$$ROOT" },
+          },
+        },
+        {
+          $addFields: {
+            messages: { $slice: ["$messages", skip, limit] },
           },
         },
         {
@@ -157,16 +176,63 @@ const messageCtrl = {
 
   removeMsg: async (req, res) => {
     try {
-      const msg = await Message.findOne({
-        _id: new ObjectId(req.params.id),
-        from: req.user.id,
-      });
-      if (!msg) return res.status(404).json({ msg: "msg not found" });
-      await Message.findOneAndUpdate({
+      const updateData = {
         status: "deleted",
         msg: "message deleted",
+      };
+      const findAndUpdateMessage = await Message.findOneAndUpdate(
+        {
+          _id: new ObjectId(req.params.id),
+          from: req.user.id,
+          status: { $ne: "deleted" },
+        },
+        updateData
+      );
+
+      if (findAndUpdateMessage) {
+        const message = await Message.findById(new ObjectId(req.params.id));
+        pusher.trigger(message.from.toString(), "update-msg", {
+          msg: message,
+        });
+        pusher.trigger(message.to.toString(), "update-msg", {
+          msg: message,
+        });
+        return res.json({ msg: "delete success!" });
+      } else return res.status(404).json({ msg: "err.message" });
+    } catch (err) {
+      return res.status(500).json({ msg: err.message });
+    }
+  },
+
+  reactionMsg: async (req, res) => {
+    const { react } = req.body;
+    try {
+      const findMessage = await Message.findOne({
+        _id: new ObjectId(req.params.id),
+        status: { $ne: "deleted" },
       });
-      return res.json({ msg: "delete success!" });
+      if (findMessage) {
+        const updateData = {
+          react: findMessage.react === react ? "" : react,
+        };
+        await Message.findOneAndUpdate(
+          {
+            _id: new ObjectId(req.params.id),
+            status: { $ne: "deleted" },
+          },
+          updateData
+        );
+        const message = await Message.findById(new ObjectId(req.params.id));
+        pusher.trigger(message.from.toString(), "update-msg", {
+          msg: message,
+        });
+        pusher.trigger(message.to.toString(), "update-msg", {
+          msg: message,
+        });
+        return res.json({ msg: "reaction success!" });
+      } else {
+        return res.status(404).json({ msg: "err.message" });
+      }
     } catch (err) {
       return res.status(500).json({ msg: err.message });
     }

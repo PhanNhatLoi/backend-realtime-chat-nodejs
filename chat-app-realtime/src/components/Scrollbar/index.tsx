@@ -8,12 +8,14 @@ interface ScrollbarProps {
   className?: string;
   children?: ReactNode;
   autoScroll?: boolean;
+  onScrollTop?: () => void;
 }
 
 const Scrollbar: FC<ScrollbarProps> = ({
   className,
   children,
   autoScroll = false,
+  onScrollTop = () => {},
   ...rest
 }) => {
   const scrollbarsRef = useRef<Scrollbars>(null);
@@ -27,6 +29,11 @@ const Scrollbar: FC<ScrollbarProps> = ({
   return (
     <Scrollbars
       ref={scrollbarsRef}
+      onScrollStop={() => {
+        if (scrollbarsRef.current?.getScrollTop() === 0) {
+          onScrollTop();
+        }
+      }}
       autoHide
       renderThumbVertical={() => {
         return (

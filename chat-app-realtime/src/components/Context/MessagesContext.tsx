@@ -14,7 +14,6 @@ import {
   pusher_key,
 } from "../../config/constant";
 import Pusher from "pusher-js";
-// import { io, Socket } from "socket.io-client";
 
 export type userType = {
   _id: string;
@@ -32,6 +31,7 @@ export type messageType = {
   from: string;
   to: string;
   msg: string;
+  react?: string;
   status: statusMessageType;
   createdAt?: string;
   updatedAt?: string;
@@ -46,6 +46,8 @@ export type statusMessageType =
 export type MessagesTypeContent = {
   _id: string;
   messages: messageType[];
+  totalMessage: number;
+  currentPage: number;
   user: userType;
 };
 
@@ -55,6 +57,7 @@ type MessagesContextType = {
   pushNewMessage: (message: messageType) => void;
   chooseUserChatting: (user?: userType) => void;
   fetchMessages: () => void;
+  fetchMessageMore: (userId: string) => void;
   listUser: userType[];
 };
 
@@ -83,7 +86,7 @@ export function MessagesProvider({ children }: Props) {
 
   const [actionToRefresh, setActionToRefresh] = useState<
     | {
-        action: "sent-msg" | "receive-msg";
+        action: "sent-msg" | "receive-msg" | "update-msg";
         msg: messageType;
         user?: userType;
       }
@@ -134,6 +137,8 @@ export function MessagesProvider({ children }: Props) {
               _id: actionToRefresh.user._id,
               messages: [actionToRefresh.msg],
               user: actionToRefresh.user,
+              currentPage: 1,
+              totalMessage: 1,
             },
           ];
         }
@@ -165,6 +170,23 @@ export function MessagesProvider({ children }: Props) {
       }
 
       setMessages(temp);
+    }
+
+    // update msg
+    if (actionToRefresh?.action === "update-msg") {
+      let temp = messages;
+      let index = temp.findIndex((f) =>
+        [actionToRefresh.msg.to, actionToRefresh.msg.from].includes(f._id)
+      );
+      if (index >= 0) {
+        const messageIndex = temp[index].messages.findIndex(
+          (f) => f._id === actionToRefresh.msg._id
+        );
+        if (messageIndex >= 0) {
+          temp[index].messages[messageIndex] = actionToRefresh.msg;
+          setMessages(temp);
+        }
+      }
     }
     setRefresh(false);
     setActionToRefresh(undefined);
@@ -200,7 +222,8 @@ export function MessagesProvider({ children }: Props) {
                       messages: mess.messages.map((msg) => {
                         return {
                           ...msg,
-                          status: "seen",
+                          status:
+                            msg.status !== "deleted" ? "seen" : msg.status,
                         };
                       }),
                     }
@@ -253,6 +276,29 @@ export function MessagesProvider({ children }: Props) {
     }
   }, [auth]);
 
+  const fetchMessageMore = useCallback(
+    (userId: string) => {
+      if (auth.token) {
+        try {
+          axios
+            .get(`${SERVER_URL}/message/get-msg?page=1&limit=5`, {
+              headers: { Authorization: "Bearer " + auth.token, userId },
+            })
+            .then((res: { data: MessagesTypeContent[] }) => {
+              console.log(res, 1234);
+              // setMessages(res.data);
+              // if (res.data.length > 0) {
+              //   setCurrentUserChatting(res.data[0].user);
+              // }
+            });
+        } catch (error) {
+          setMessages([]);
+        }
+      }
+    },
+    [auth.token]
+  );
+
   // realtime event
   useEffect(() => {
     if (userId) {
@@ -293,6 +339,15 @@ export function MessagesProvider({ children }: Props) {
       channelUser.bind("sent-msg", ({ msg }: { msg: messageType }) => {
         setActionToRefresh({
           action: "sent-msg",
+          msg: msg,
+        });
+        setRefresh(true);
+      });
+
+      // event deleted-msg
+      channelUser.bind("update-msg", ({ msg }: { msg: messageType }) => {
+        setActionToRefresh({
+          action: "update-msg",
           msg: msg,
         });
         setRefresh(true);
@@ -340,6 +395,8 @@ export function MessagesProvider({ children }: Props) {
                 _id: message.to,
                 messages: [newMessage],
                 user: currentUserChatting,
+                currentPage: 1,
+                totalMessage: 1,
               },
             ]
           : newMessages;
@@ -368,6 +425,7 @@ export function MessagesProvider({ children }: Props) {
         pushNewMessage,
         chooseUserChatting,
         fetchMessages,
+        fetchMessageMore,
         listUser,
       }}
     >
