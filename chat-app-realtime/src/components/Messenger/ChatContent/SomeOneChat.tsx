@@ -83,6 +83,15 @@ const SomeOneChat = ({ messages }: { messages: messageType[] }) => {
   const user = useSelector((state: any) => state.auth.user);
   const { currentUserChatting } = useContext(MessagesContext);
 
+  const lastSeenIndex = (() => {
+    for (let i = messages.length - 1; i >= 0; i--) {
+      if (messages[i].status === "seen") {
+        return i;
+      }
+    }
+    return -1;
+  })();
+
   return (
     <>
       {messages.map((msg, index) => {
@@ -120,9 +129,22 @@ const SomeOneChat = ({ messages }: { messages: messageType[] }) => {
                       </div>
                     </div>
                   )}
-                  {index === messages.length - 1 && (
+                  {index === messages.length - 1 && msg.status !== "seen" && (
                     <span className="w-full text-right text-sm text-gray-500">
                       {msg.status}
+                    </span>
+                  )}
+                  {index === lastSeenIndex && (
+                    <span className="w-full flex justify-end mt-2">
+                      <MUIAvatar
+                        sx={{
+                          background: "red",
+                          width: 20,
+                          height: 20,
+                        }}
+                        alt={currentUserChatting?.name}
+                        src={currentUserChatting?.avatar || ""}
+                      />
                     </span>
                   )}
                 </div>

@@ -173,6 +173,13 @@ const messageCtrl = {
         { from: userIdObject, status: "sent" },
         { $set: { status: "seen" } }
       );
+      const lastedMessage = await Message.find({ from: userIdObject });
+      pusher.trigger(userId, "read-msg", {
+        msg:
+          (lastedMessage.length > 0 &&
+            lastedMessage[lastedMessage.length - 1]) ||
+          undefined,
+      });
       return res.json({ msg: "success" });
     } catch (err) {
       return res.status(500).json({ msg: err.message });

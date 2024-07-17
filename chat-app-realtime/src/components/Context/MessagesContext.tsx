@@ -188,6 +188,7 @@ export function MessagesProvider({ children }: Props) {
         }
       }
     }
+
     setRefresh(false);
     setActionToRefresh(undefined);
   };
@@ -334,6 +335,15 @@ export function MessagesProvider({ children }: Props) {
       channelUser.bind("sent-msg", ({ msg }: { msg: messageType }) => {
         setActionToRefresh({
           action: "sent-msg",
+          msg: msg,
+        });
+        setRefresh(true);
+      });
+
+      // event send-done
+      channelUser.bind("read-msg", ({ msg }: { msg: messageType }) => {
+        setActionToRefresh({
+          action: "update-msg",
           msg: msg,
         });
         setRefresh(true);
