@@ -6,10 +6,20 @@ import SidebarContent from "./Sidebar/SidebarContent";
 import ChatContent from "./ChatContent/ChatContent";
 import MenuTwoToneIcon from "@mui/icons-material/MenuTwoTone";
 
-import { Box, styled, Divider, Drawer, IconButton } from "@mui/material";
+import {
+  Box,
+  styled,
+  Divider,
+  Drawer,
+  IconButton,
+  CircularProgress,
+} from "@mui/material";
 import { Colors } from "../../config/Color";
 import Scrollbar from "../Scrollbar";
-import { MessagesContext } from "../Context/MessagesContext";
+import {
+  MessagesContext,
+  MessagesTypeContent,
+} from "../Context/MessagesContext";
 
 const RootWrapper = styled(Box)(
   () => `
@@ -67,12 +77,14 @@ const DrawerWrapperMobile = styled(Drawer)(
 
 function ApplicationsMessenger() {
   const [mobileOpen, setMobileOpen] = useState(false);
-
+  const [loading, setLoading] = useState<boolean>(false);
+  const [autoScroll, setAutoScroll] = useState<boolean>(true);
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
 
-  const { currentUserChatting, fetchMessageMore } = useContext(MessagesContext);
+  const { currentUserChatting, updateMessageById } =
+    useContext(MessagesContext);
 
   return (
     <RootWrapper className="Mui-FixedWrapper">
@@ -120,11 +132,31 @@ function ApplicationsMessenger() {
         </ChatTopBar>
 
         <Scrollbar
-          autoScroll
+          autoScroll={autoScroll}
           onScrollTop={() => {
-            currentUserChatting && fetchMessageMore(currentUserChatting?._id);
+            setLoading(true);
+            setAutoScroll(false);
+            updateMessageById().finally(() => {
+              setTimeout(() => {
+                setLoading(false);
+                setAutoScroll(true);
+              }, 1000);
+            });
           }}
         >
+          {loading && (
+            <div
+              style={{
+                marginTop: "10px",
+                width: "100%",
+                display: "flex",
+                justifyItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <CircularProgress />
+            </div>
+          )}
           <ChatContent />
         </Scrollbar>
         <Divider />

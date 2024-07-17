@@ -9,6 +9,7 @@ interface ScrollbarProps {
   children?: ReactNode;
   autoScroll?: boolean;
   onScrollTop?: () => void;
+  ref?: Scrollbars;
 }
 
 const Scrollbar: FC<ScrollbarProps> = ({
@@ -16,13 +17,16 @@ const Scrollbar: FC<ScrollbarProps> = ({
   children,
   autoScroll = false,
   onScrollTop = () => {},
+  ref,
   ...rest
 }) => {
   const scrollbarsRef = useRef<Scrollbars>(null);
 
   useEffect(() => {
     if (autoScroll && scrollbarsRef.current) {
-      scrollbarsRef.current.scrollToBottom();
+      setTimeout(() => {
+        scrollbarsRef.current && scrollbarsRef.current.scrollToBottom();
+      }, 100);
     }
   }, [scrollbarsRef.current?.getScrollHeight()]);
 

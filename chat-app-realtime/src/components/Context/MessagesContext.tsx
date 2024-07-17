@@ -47,7 +47,7 @@ export type MessagesTypeContent = {
   _id: string;
   messages: messageType[];
   totalMessage: number;
-  currentPage: number;
+  page: number;
   user: userType;
 };
 
@@ -57,7 +57,7 @@ type MessagesContextType = {
   pushNewMessage: (message: messageType) => void;
   chooseUserChatting: (user?: userType) => void;
   fetchMessages: () => void;
-  fetchMessageMore: (userId: string) => void;
+  updateMessageById: () => Promise<unknown>;
   listUser: userType[];
 };
 
@@ -137,7 +137,7 @@ export function MessagesProvider({ children }: Props) {
               _id: actionToRefresh.user._id,
               messages: [actionToRefresh.msg],
               user: actionToRefresh.user,
-              currentPage: 1,
+              page: 1,
               totalMessage: 1,
             },
           ];
@@ -277,20 +277,15 @@ export function MessagesProvider({ children }: Props) {
   }, [auth]);
 
   const fetchMessageMore = useCallback(
-    (userId: string) => {
+    async (userId: string, page: number, limit: number = 10) => {
       if (auth.token) {
         try {
-          axios
-            .get(`${SERVER_URL}/message/get-msg?page=1&limit=5`, {
+          return await axios.get(
+            `${SERVER_URL}/message/get-msg?page=${page}&limit=${limit}`,
+            {
               headers: { Authorization: "Bearer " + auth.token, userId },
-            })
-            .then((res: { data: MessagesTypeContent[] }) => {
-              console.log(res, 1234);
-              // setMessages(res.data);
-              // if (res.data.length > 0) {
-              //   setCurrentUserChatting(res.data[0].user);
-              // }
-            });
+            }
+          );
         } catch (error) {
           setMessages([]);
         }
@@ -395,7 +390,7 @@ export function MessagesProvider({ children }: Props) {
                 _id: message.to,
                 messages: [newMessage],
                 user: currentUserChatting,
-                currentPage: 1,
+                page: 1,
                 totalMessage: 1,
               },
             ]
@@ -417,6 +412,43 @@ export function MessagesProvider({ children }: Props) {
     }
   };
 
+  const updateMessageById = () => {
+    setRefresh(true);
+    return new Promise((resolve) => {
+      const messageIndex = messages.findIndex(
+        (f) => f._id === currentUserChatting?._id
+      );
+      if (
+        currentUserChatting &&
+        messageIndex >= 0 &&
+        messages[messageIndex].totalMessage >
+          messages[messageIndex].messages.length
+      ) {
+        fetchMessageMore(
+          currentUserChatting?._id,
+          messages[messageIndex].page + 1
+        )
+          .then((res: any) => {
+            const { data } = res;
+            setMessages((pre) => {
+              pre[messageIndex] = {
+                ...pre[messageIndex],
+                page: pre[messageIndex].page + 1,
+                messages: [...data.messages, ...pre[messageIndex].messages],
+              };
+              return pre;
+            });
+            setRefresh(false);
+          })
+          .finally(() => {
+            resolve(true);
+          });
+      } else {
+        resolve(true);
+      }
+    });
+  };
+
   return (
     <MessagesContext.Provider
       value={{
@@ -425,7 +457,7 @@ export function MessagesProvider({ children }: Props) {
         pushNewMessage,
         chooseUserChatting,
         fetchMessages,
-        fetchMessageMore,
+        updateMessageById,
         listUser,
       }}
     >

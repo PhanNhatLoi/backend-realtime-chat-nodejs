@@ -59,7 +59,7 @@ function BottomBarContent() {
             setMessage(e.target.value);
           }}
           onKeyDown={(event) => {
-            if (event.key === "Enter") handleSubmit();
+            if (event.key === "Enter" && message) handleSubmit();
           }}
         />
       </div>

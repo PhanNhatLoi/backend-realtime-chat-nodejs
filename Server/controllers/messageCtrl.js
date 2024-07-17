@@ -69,6 +69,11 @@ const messageCtrl = {
         },
         {
           $addFields: {
+            page: 1, // Hardcode giá trị page là 1
+          },
+        },
+        {
+          $addFields: {
             messages: { $reverseArray: "$messages" },
           },
         },
@@ -100,7 +105,7 @@ const messageCtrl = {
     try {
       const userId = req.header("userId");
       const page = parseInt(req.query.page) || 1;
-      const limit = parseInt(req.params.limit) || 10;
+      const limit = parseInt(req.query.limit) || 10;
       const skip = (page - 1) * limit;
       if (!userId) return res.json({ msg: "not found" });
       const token = getTokenBearer(req);
