@@ -16,6 +16,8 @@ app.use(bodyParser.json());
 app.use("/user", require("./Server/router/userRouter"));
 app.use("/message", require("./Server/router/messageRouter"));
 app.use("/file", require("./Server/router/file"));
+app.use("/area", require("./Server/router/areaRouter"));
+app.use("/house", require("./Server/router/houseRouter"));
 
 // connect mongoDB
 const URI = process.env.MONGODB_URI + process.env.DB_NAME;

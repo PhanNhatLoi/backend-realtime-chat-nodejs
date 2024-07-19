@@ -13,6 +13,9 @@ const user = new mongoose.Schema(
       trim: true,
       unique: true,
     },
+    phone: {
+      type: String,
+    },
     password: {
       type: String,
       required: [true, "please enter your password"],
@@ -20,6 +23,7 @@ const user = new mongoose.Schema(
     role: {
       type: Number,
       default: 0,
+      //0 user, 1 partner, 2 admin
     },
     state: {
       type: String,
