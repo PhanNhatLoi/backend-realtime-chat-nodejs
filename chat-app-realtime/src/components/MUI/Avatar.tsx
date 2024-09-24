@@ -13,9 +13,9 @@ const MUIAvatar = (props: Props) => {
   return (
     <Avatar
       variant="rounded"
-      style={{ borderRadius: "50%", ...style }}
+      style={{ borderRadius: "50%", border: "solid 1.5px gray", ...style }}
       src={
-        src.startsWith("/")
+        src?.startsWith("/")
           ? `/images/avatars${src || "/cat-image-1.png"}`
           : `${SERVER_URL}/file/${src}`
       }

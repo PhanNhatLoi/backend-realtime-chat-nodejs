@@ -19,7 +19,6 @@ const HeaderStyled = styled("div")(
   position: fixed;
   top: 0;
   display: flex;
-  justify-content: end;
 
 `
 );
@@ -36,7 +35,7 @@ const Profile = () => {
   return (
     <div className="w-screen flex flex-wrap justify-center text-center mt-28">
       <HeaderStyled>
-        <AccountMenu source={user.avatar} transform="right" />
+        <AccountMenu source={user.avatar} transform="left" />
       </HeaderStyled>
       <Formik
         validationSchema={schema}

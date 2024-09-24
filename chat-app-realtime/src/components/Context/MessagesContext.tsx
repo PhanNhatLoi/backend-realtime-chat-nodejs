@@ -78,7 +78,9 @@ export function MessagesProvider({ children }: Props) {
 
   const [messages, setMessages] = useState<MessagesTypeContent[]>([]);
 
-  const userId = useSelector((state: any) => state.auth.user)?._id;
+  const user = useSelector((state: any) => state.auth.user);
+
+  const userId = user?._id;
 
   const [listUser, setListUser] = useState<userType[]>([]);
 
@@ -224,7 +226,11 @@ export function MessagesProvider({ children }: Props) {
                         return {
                           ...msg,
                           status:
-                            msg.status !== "deleted" ? "seen" : msg.status,
+                            msg.to !== userId
+                              ? msg.status
+                              : msg.status !== "deleted"
+                              ? "seen"
+                              : msg.status,
                         };
                       }),
                     }
@@ -305,6 +311,10 @@ export function MessagesProvider({ children }: Props) {
           transport: "ajax",
         },
       });
+
+      const groupsChannel = user?.groupIds?.map((group: string) => {
+        return pusher.subscribe(group);
+      });
       const channelUser = pusher.subscribe(userId);
 
       const channelApp = pusher.subscribe(pusher_channel);
@@ -361,6 +371,9 @@ export function MessagesProvider({ children }: Props) {
       return () => {
         pusher.unsubscribe(userId);
         pusher.unsubscribe(pusher_channel);
+        groupsChannel?.map((group: any) => {
+          pusher.unsubscribe(group);
+        });
         pusher.disconnect();
       };
     }

@@ -16,10 +16,7 @@ import {
 } from "@mui/material";
 import { Colors } from "../../config/Color";
 import Scrollbar from "../Scrollbar";
-import {
-  MessagesContext,
-  MessagesTypeContent,
-} from "../Context/MessagesContext";
+import { MessagesContext } from "../Context/MessagesContext";
 
 const RootWrapper = styled(Box)(
   () => `
@@ -48,7 +45,6 @@ const ChatWindow = styled(Box)(
 
 const ChatTopBar = styled(Box)(
   () => `
-        background: rgb(85, 105, 255);
         border-bottom: ${Colors.Gray_02} solid 1px;
         padding: 10px;
         align-items: center;
@@ -105,16 +101,15 @@ function ApplicationsMessenger() {
           display: { xs: "none", lg: "inline-block" },
         }}
       >
-        <Scrollbar>
-          <SidebarContent />
-        </Scrollbar>
+        <SidebarContent />
       </Sidebar>
-      <ChatWindow>
+      <ChatWindow className="relative">
         <ChatTopBar
           sx={{
             display: { xs: "flex", lg: "inline-block" },
             height: "85px",
             justifyContent: "space-between",
+            background: "white",
           }}
         >
           {currentUserChatting ? <TopBarContent /> : <div></div>}
@@ -131,6 +126,13 @@ function ApplicationsMessenger() {
           </IconButtonToggle>
         </ChatTopBar>
 
+        <div
+          className="h-full w-full bg-cover bg-no-repeat bg-center absolute "
+          style={{
+            zIndex: -10,
+            backgroundImage: "url('/images/background_02.jpg')",
+          }}
+        />
         <Scrollbar
           autoScroll={autoScroll}
           onScrollTop={() => {
@@ -157,6 +159,7 @@ function ApplicationsMessenger() {
               <CircularProgress />
             </div>
           )}
+
           <ChatContent />
         </Scrollbar>
         <Divider />

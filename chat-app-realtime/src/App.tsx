@@ -1,11 +1,12 @@
 import { BrowserRouter as Router } from "react-router-dom";
-import Body from "./components/Body";
+import AppRoutes from "./components/AppRoutes";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
 import { SERVER_URL, pusher_cluster, pusher_key } from "./config/constant";
 import { dispatchGetUser, dispatchLogout } from "./redux/actions/authAction";
 import Pusher from "pusher-js";
+import AuthRoutes from "./components/AuthRoutes";
 
 function App() {
   // store value
@@ -65,7 +66,8 @@ function App() {
 
   return (
     <Router>
-      <Body />
+      {token && <AppRoutes />}
+      {!token && <AuthRoutes />}
     </Router>
   );
 }

@@ -18,7 +18,6 @@ const Message = new mongoose.Schema(
     status: {
       type: String,
       default: "new",
-      // value: ["new","sending","sent","seen"]
     },
     react: {
       type: String,
