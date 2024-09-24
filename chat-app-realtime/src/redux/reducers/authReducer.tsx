@@ -21,11 +21,6 @@ const authReducer = (
         user: null,
         token: "",
       };
-    // case ACTIONS.GET_TOKEN:
-    //   return {
-    //     ...state,
-    //     token: action.payload,
-    //   };
     case ACTIONS.GET_USER:
       return {
         ...state,

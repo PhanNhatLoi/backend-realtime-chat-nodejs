@@ -35,6 +35,10 @@ const user = new mongoose.Schema(
       default:
         "https://res.cloudinary.com/nhatloi/image/upload/v1608601448/avatar/78-785904_block-chamber-of-commerce-avatar-white-avatar-icon_b9lssx.jpg",
     },
+    groupIds: {
+      type: Array,
+      default: [],
+    },
   },
   {
     timestamps: true,

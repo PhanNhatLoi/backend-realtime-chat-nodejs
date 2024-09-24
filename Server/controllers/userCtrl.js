@@ -1,4 +1,5 @@
 const Users = require("../models/user");
+const Groups = require("../models/group");
 const argon2 = require("argon2");
 const jwt = require("jsonwebtoken");
 const { ObjectId } = require("mongodb");
@@ -163,6 +164,58 @@ const userCtrl = {
       pusher.trigger(req.user.id, "user-change-password", {});
 
       return res.json({ msg: "change password success!" });
+    } catch (err) {
+      return res.status(500).json({ msg: err.message });
+    }
+  },
+
+  joinGroup: async (req, res) => {
+    try {
+      const { groupId } = req.body;
+      if (!groupId) {
+        return res.status(500).json({ msg: "Group not found" });
+      }
+      const group = await Groups.findById(groupId);
+      if (!group) {
+        return res.status(500).json({ msg: "Group not found" });
+      }
+      const user = await Users.findById(new ObjectId(req.user.id));
+      await Users.findOneAndUpdate(
+        {
+          _id: req.user.id,
+        },
+        {
+          groupIds: (user.groupIds?.length &&
+            user.groupIds.filter((f) => f !== groupId).push(groupId)) || [
+            groupId,
+          ],
+        }
+      );
+      return res.json({ msg: "Join group success" });
+    } catch (err) {
+      return res.status(500).json({ msg: err.message });
+    }
+  },
+
+  leaveGroup: async (req, res) => {
+    try {
+      const { groupId } = req.body;
+      if (!groupId) {
+        return res.status(500).json({ msg: "Group not found" });
+      }
+      const user = await Users.findById(new ObjectId(req.user.id));
+      if (!user?.groupIds || !user?.groupIds?.some((s) => s === groupId)) {
+        return res.status(500).json({ msg: "User not join group" });
+      }
+      await Users.findOneAndUpdate(
+        {
+          _id: req.user.id,
+        },
+        {
+          groupIds: user?.groupIds?.filter((f) => f !== groupId),
+        }
+      );
+      return res.json({ msg: "Leave group success" });
     } catch (err) {
       return res.status(500).json({ msg: err.message });
     }

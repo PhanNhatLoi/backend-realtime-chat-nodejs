@@ -19,7 +19,6 @@ const HeaderStyled = styled("div")(
   position: fixed;
   top: 0;
   display: flex;
-  justify-content: end;
 
 `
 );
@@ -30,14 +29,6 @@ const ChangePassword = () => {
   const { user, token } = auth;
   const [loading, setLoading] = useState<boolean>(false); //loading action submit
 
-  //   export const confirmPasswordValidate = yup
-  //   .string()
-  //   .required('required_field'.toString())
-  //   .when('password', {
-  //     is: (val: string) => (val && val.length > 0 ? true : false),
-  //     then: () =>
-  //       yup.string().oneOf([yup.ref('password')], 'pass_not_match'.toString()),
-  //   });
   const schema = Yup.object({
     password: Yup.string().required().min(6),
     confirmPassword: Yup.string()
@@ -54,7 +45,7 @@ const ChangePassword = () => {
   return (
     <div className="w-screen flex flex-wrap justify-center text-center mt-28">
       <HeaderStyled>
-        <AccountMenu source={user.avatar} transform="right" />
+        <AccountMenu source={user.avatar} transform="left" />
       </HeaderStyled>
       <Formik
         validationSchema={schema}

@@ -18,4 +18,8 @@ router.patch("/update", auth, userCtrl.updateUser);
 
 router.put("/change_password", auth, userCtrl.changePassword);
 
+router.put("/join_group", auth, userCtrl.joinGroup);
+
+router.put("/leave_group", auth, userCtrl.leaveGroup);
+
 module.exports = router;

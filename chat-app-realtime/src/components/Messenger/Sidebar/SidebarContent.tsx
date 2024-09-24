@@ -1,94 +1,117 @@
-import { useContext } from "react";
-import { TextField, InputAdornment, List, Autocomplete } from "@mui/material";
-import SearchTwoToneIcon from "@mui/icons-material/SearchTwoTone";
+import { useContext, useState } from "react";
+import { List, Box } from "@mui/material";
 import { useSelector } from "react-redux";
 import ItemChat from "./ItemChat";
 import { MessagesContext } from "../../Context/MessagesContext";
-import MUIAvatar from "../../MUI/Avatar";
 import AccountMenu from "./AccountMenu";
+import TabList from "@mui/lab/TabList";
+import Tab from "@mui/material/Tab";
+import TabPanel from "@mui/lab/TabPanel";
+import TabContext from "@mui/lab/TabContext";
+import MUITextField from "../../MUI/MUITextField";
+import Scrollbar from "../../Scrollbar";
 
 function SidebarContent() {
   // const
   const user = useSelector((state: any) => state.auth.user);
-  const { messages, listUser, chooseUserChatting } =
-    useContext(MessagesContext);
+  const { messages, listUser } = useContext(MessagesContext);
+  const [searchValue, setSearchValue] = useState<string>("");
+
+  const [tab, setTab] = useState<"recent" | "friends" | "groups">("recent");
   return (
     <div className="p-7 w-full">
-      <div className="flex items-center justify-between">
-        <AccountMenu source={user.avatar} />
+      <div
+        className="flex items-center justify-between pb-4"
+        style={{ borderBottom: "solid 0.5px gray" }}
+      >
+        <AccountMenu source={user?.avatar} />
         <div className="ml-5 text-4xl">
-          <span>{user.name}</span>
+          <span>{user?.name}</span>
         </div>
       </div>
-      <Autocomplete
-        onChange={(_, __: any) => {}}
-        freeSolo
-        options={listUser.map((el) => {
-          return { ...el, label: el.name };
-        })}
-        renderOption={(_, val) => {
-          return (
-            <div
-              key={val._id}
-              onClick={() => {
-                const currentUser = listUser.find((f) => f._id === val._id);
-                currentUser && chooseUserChatting(currentUser);
-              }}
-              className="w-full p-2 flex items-center text-3xl cursor-pointer"
-            >
-              <MUIAvatar src={val.avatar} style={{ marginRight: "5px" }} />{" "}
-              {val.name}
-            </div>
-          );
-        }}
-        renderInput={(params) => (
-          <TextField
-            {...params}
+      <Box sx={{ width: "100%" }}>
+        <TabContext value={tab}>
+          <Box
             sx={{
-              mt: 2,
-              mb: 1,
+              borderBottom: 1,
+              borderColor: "divider",
             }}
-            label="Search name"
-            InputProps={{
-              ...params.InputProps,
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchTwoToneIcon />
-                </InputAdornment>
-              ),
-              type: "Search....",
-            }}
-          />
-        )}
-      />
-      <div className="mb-2 mt-1 text-4xl">
-        <h3>Chats</h3>
-      </div>
-
-      <div className="mt-2">
-        <List disablePadding component="div">
-          {messages.map((element) => {
-            return (
-              <ItemChat
-                key={element._id}
-                user={element.user}
-                messageUnread={
-                  element.messages.filter(
-                    (f) =>
-                      !["seen", "deleted"].includes(f.status) &&
-                      f.from !== user._id
-                  ).length
-                }
-                messageLasted={
-                  (element.messages &&
-                    element.messages[element.messages.length - 1]?.msg) ||
-                  ""
-                }
-              />
-            );
-          })}
-        </List>
-      </div>
+          >
+            <TabList
+              onChange={(_, tab) => {
+                setTab(tab as "recent" | "friends");
+              }}
+              aria-label="lab API tabs example"
+            >
+              <Tab label="Recents" value="recent" />
+              <Tab label="Friends" value="friends" />
+              <Tab disabled label="Groups" value="groups" />
+            </TabList>
+          </Box>
+          <TabPanel value="recent" style={{ padding: 0 }}>
+            <div
+              className="mt-2"
+              style={{
+                height: "75vh",
+              }}
+            >
+              <Scrollbar>
+                <List disablePadding component="div">
+                  {messages.map((element) => {
+                    return (
+                      <ItemChat
+                        key={element._id}
+                        user={element.user}
+                        messageUnread={
+                          element.messages.filter(
+                            (f) =>
+                              !["seen", "deleted"].includes(f.status) &&
+                              f.from !== user?._id
+                          ).length
+                        }
+                        messageLasted={
+                          (element.messages &&
+                            element.messages[element.messages.length - 1]
+                              ?.msg) ||
+                          ""
+                        }
+                      />
+                    );
+                  })}
+                </List>
+              </Scrollbar>
+            </div>
+          </TabPanel>
+          <TabPanel value="friends" style={{ padding: 0 }}>
+            <MUITextField
+              value={searchValue}
+              placeholder="Search name"
+              onChange={(val) => {
+                setSearchValue(val as string);
+              }}
+            />
+            <div
+              className="mt-2"
+              style={{
+                height: "70vh",
+              }}
+            >
+              <Scrollbar>
+                <List disablePadding component="div">
+                  {listUser
+                    .filter((f) => f.name.includes(searchValue))
+                    .map((user) => {
+                      return <ItemChat key={user._id} user={user} />;
+                    })}
+                </List>
+              </Scrollbar>
+            </div>
+          </TabPanel>
+          <TabPanel value="groups" style={{ padding: 0 }}>
+            Groups
+          </TabPanel>
+        </TabContext>
+      </Box>
     </div>
   );
 }

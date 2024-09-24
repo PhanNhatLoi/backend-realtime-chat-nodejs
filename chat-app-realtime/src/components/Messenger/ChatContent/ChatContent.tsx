@@ -6,11 +6,7 @@ function ChatContent() {
   const { messages, currentUserChatting } = useContext(MessagesContext);
   const messagesList = messages.find((f) => f._id === currentUserChatting?._id);
 
-  return (
-    <div className="p-3">
-      <SomeOneChat messages={messagesList?.messages || []} />
-    </div>
-  );
+  return <SomeOneChat messages={messagesList?.messages || []} />;
 }
 
 export default ChatContent;

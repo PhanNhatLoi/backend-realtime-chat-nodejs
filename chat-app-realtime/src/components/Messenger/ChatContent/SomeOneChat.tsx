@@ -5,13 +5,13 @@ import React, { useContext } from "react";
 import MUIAvatar from "../../MUI/Avatar";
 import DividerWrapper from "./DividerWrapper";
 import ActionMenu from "./ActionMenu";
-import { Emoji, EmojiStyle } from "emoji-picker-react";
+import { Emoji } from "emoji-picker-react";
 const CardWrapperSecondary = styled(Card)(
   ({ deleted }: { deleted?: boolean }) =>
     `
-        background: rgba(34, 51, 84, 0.1);
+        background: rgba(34, 51, 84, 1);
         word-break: break-word;
-        color: rgba(34, 51, 84, 1);
+        color: rgb(255, 255, 255);
         padding: 15px;
         max-width: 380px;
         display: inline-flex;
@@ -20,8 +20,8 @@ const CardWrapperSecondary = styled(Card)(
           deleted &&
           `
             box-shadow: none;
-            background: rgba(34, 51, 84, 0.2);
-            color: rgba(34, 51, 84, 0.2);
+            background: rgba(34, 51, 84, 0.8);
+            color: rgba(255, 255, 255,0.2);
           `
         }
     `
@@ -40,7 +40,7 @@ const CardWrapperPrimary = styled(Card)(
         deleted &&
         `
           box-shadow: none;
-          background: rgba(34, 51, 84, 0.2);
+          background: rgba(34, 51, 84, 0.8);
           color: rgba(34, 51, 84, 0.2);
         `
       }
@@ -93,7 +93,7 @@ const SomeOneChat = ({ messages }: { messages: messageType[] }) => {
   })();
 
   return (
-    <>
+    <div className="p-3">
       {messages.map((msg, index) => {
         const dateTime =
           msg.createdAt &&
@@ -193,7 +193,7 @@ const SomeOneChat = ({ messages }: { messages: messageType[] }) => {
           );
         }
       })}
-    </>
+    </div>
   );
 };
 
