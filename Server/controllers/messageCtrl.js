@@ -98,28 +98,28 @@ const messageCtrl = {
             user: { $arrayElemAt: ["$user", 0] },
           },
         },
-        {
-          $addFields: {
-            blocking: {
-              $cond: {
-                if: { $in: ["$user._id", user.blockIds] },
-                then: true,
-                else: false,
-              },
-            },
-          },
-        },
-        {
-          $addFields: {
-            isBlocked: {
-              $cond: {
-                if: { $in: [user._id, "$user.blockIds"] },
-                then: true,
-                else: false,
-              },
-            },
-          },
-        },
+        // {
+        //   $addFields: {
+        //     blocking: {
+        //       $cond: {
+        //         if: { $in: ["$user._id", user.blockIds || []] },
+        //         then: true,
+        //         else: false,
+        //       },
+        //     },
+        //   },
+        // },
+        // {
+        //   $addFields: {
+        //     isBlocked: {
+        //       $cond: {
+        //         if: { $in: [user._id, "$user.blockIds"] },
+        //         then: true,
+        //         else: false,
+        //       },
+        //     },
+        //   },
+        // },
         {
           $project: {
             "user.password": 0,
