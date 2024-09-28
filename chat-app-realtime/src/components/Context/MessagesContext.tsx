@@ -48,7 +48,8 @@ export type MessagesTypeContent = {
   messages: messageType[];
   totalMessage: number;
   page: number;
-  user: userType;
+  user?: userType;
+  group?: userType;
 };
 
 type MessagesContextType = {
@@ -312,9 +313,9 @@ export function MessagesProvider({ children }: Props) {
         },
       });
 
-      const groupsChannel = user?.groupIds?.map((group: string) => {
-        return pusher.subscribe(group);
-      });
+      // const groupsChannel = user?.groupIds?.map((group: string) => {
+      //   return pusher.subscribe(group);
+      // });
       const channelUser = pusher.subscribe(userId);
 
       const channelApp = pusher.subscribe(pusher_channel);
@@ -371,9 +372,9 @@ export function MessagesProvider({ children }: Props) {
       return () => {
         pusher.unsubscribe(userId);
         pusher.unsubscribe(pusher_channel);
-        groupsChannel?.map((group: any) => {
-          pusher.unsubscribe(group);
-        });
+        // groupsChannel?.map((group: any) => {
+        //   pusher.unsubscribe(group);
+        // });
         pusher.disconnect();
       };
     }

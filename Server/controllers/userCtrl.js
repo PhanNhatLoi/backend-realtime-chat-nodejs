@@ -97,7 +97,11 @@ const userCtrl = {
 
   getUserInfor: async (req, res) => {
     try {
-      const user = await Users.findById(req.user.id).select("-password");
+      const user = await Users.findById(req.user.id)
+        .select("-password")
+        .populate({
+          path: "groupIds",
+        });
       return res.json(user);
     } catch (err) {
       return res.status(500).json({ msg: err.message });
@@ -216,6 +220,34 @@ const userCtrl = {
         }
       );
       return res.json({ msg: "Leave group success" });
+    } catch (err) {
+      return res.status(500).json({ msg: err.message });
+    }
+  },
+
+  blockUnBlockUser: async (req, res) => {
+    try {
+      const { userId } = req.body;
+      if (!userId || userId === req.user.id) {
+        return res.status(500).json({ msg: "User not found" });
+      }
+      const user = await Users.findById(userId);
+      if (!user) {
+        return res.status(500).json({ msg: "User not found" });
+      }
+      const currentUser = await Users.findById(req.user.id);
+
+      await Users.findOneAndUpdate(
+        {
+          _id: req.user.id,
+        },
+        {
+          blockIds: currentUser.blockIds?.includes(new ObjectId(userId))
+            ? currentUser.blockIds.filter((f) => f.toString() !== userId)
+            : [...currentUser.blockIds, userId],
+        }
+      );
+      return res.json({ msg: "update success" });
     } catch (err) {
       return res.status(500).json({ msg: err.message });
     }

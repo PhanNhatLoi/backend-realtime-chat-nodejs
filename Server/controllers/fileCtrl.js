@@ -25,6 +25,7 @@ const uploadCtrl = {
           if (err) {
             return res.status(500).send(err);
           }
+          console.log(result, 1234);
           const pathName = result.secure_url.split("/");
           res.json({ path: pathName[pathName.length - 1] });
         }
@@ -66,10 +67,13 @@ const uploadCtrl = {
   getImage: async (req, res) => {
     const name = req.params.name;
     if (!name) return res.status(400).json({ msg: "Image not fount" });
-    const response = await fetch(
-      `${process.env.CLOUD_URL}${imageFolder}/${name}`,
-      { agent: new https.Agent({ rejectUnauthorized: false }) }
-    );
+    const optimizeUrl = cloudinary.url(`${imageFolder}/${name.split(".")[0]}`, {
+      fetch_format: "auto",
+      quality: "auto",
+    });
+    const response = await fetch(optimizeUrl, {
+      agent: new https.Agent({ rejectUnauthorized: false }),
+    });
     if (!response.ok) {
       return res.status(400).json({ msg: "Image not fount" });
     }
@@ -80,11 +84,6 @@ const uploadCtrl = {
     res.set("Content-Type", contentType);
     return res.send(Buffer.from(buffer));
   },
-};
-const removeTmp = (path) => {
-  fs.unlink(path, (err) => {
-    if (err) throw err;
-  });
 };
 
 module.exports = uploadCtrl;

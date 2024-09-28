@@ -16,6 +16,13 @@ const messageCtrl = {
       const token = getTokenBearer(req);
       const { id } = jwt.decode(token);
       const { to, msg } = req.body;
+      const users = await Users.find({
+        _id: {
+          $in: [new ObjectId(to), new ObjectId(id)],
+        },
+      });
+
+      console.log(users);
 
       const newMsg = new Message({
         from: id,
@@ -38,6 +45,7 @@ const messageCtrl = {
     try {
       const token = getTokenBearer(req);
       const { id } = jwt.decode(token);
+      const user = await Users.findById(id);
       const messages = await Message.aggregate([
         {
           $match: {
@@ -91,8 +99,32 @@ const messageCtrl = {
           },
         },
         {
+          $addFields: {
+            blocking: {
+              $cond: {
+                if: { $in: ["$user._id", user.blockIds] },
+                then: true,
+                else: false,
+              },
+            },
+          },
+        },
+        {
+          $addFields: {
+            isBlocked: {
+              $cond: {
+                if: { $in: [user._id, "$user.blockIds"] },
+                then: true,
+                else: false,
+              },
+            },
+          },
+        },
+        {
           $project: {
             "user.password": 0,
+            "user.blockIds": 0,
+            "user.groupIds": 0,
           },
         },
       ]);
@@ -101,6 +133,7 @@ const messageCtrl = {
       return res.status(500).json({ msg: err.message });
     }
   },
+
   getMsg: async (req, res) => {
     try {
       const userId = req.header("userId");

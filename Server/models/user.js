@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { ObjectId } = require("mongodb");
 
 const user = new mongoose.Schema(
   {
@@ -35,10 +36,20 @@ const user = new mongoose.Schema(
       default:
         "https://res.cloudinary.com/nhatloi/image/upload/v1608601448/avatar/78-785904_block-chamber-of-commerce-avatar-white-avatar-icon_b9lssx.jpg",
     },
-    groupIds: {
-      type: Array,
-      default: [],
-    },
+    groupIds: [
+      {
+        type: ObjectId,
+        ref: "Group",
+        default: [],
+      },
+    ],
+    blockIds: [
+      {
+        type: ObjectId,
+        ref: "User",
+        default: [],
+      },
+    ],
   },
   {
     timestamps: true,
