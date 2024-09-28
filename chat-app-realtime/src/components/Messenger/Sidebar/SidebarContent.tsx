@@ -16,6 +16,8 @@ function SidebarContent() {
   const user = useSelector((state: any) => state.auth.user);
   const { messages, listUser } = useContext(MessagesContext);
   const [searchValue, setSearchValue] = useState<string>("");
+  const [searchGroup, setSearchGroup] = useState<string>("");
+  const groups = user?.groupIds || [];
 
   const [tab, setTab] = useState<"recent" | "friends" | "groups">("recent");
   return (
@@ -45,7 +47,7 @@ function SidebarContent() {
             >
               <Tab label="Recents" value="recent" />
               <Tab label="Friends" value="friends" />
-              <Tab disabled label="Groups" value="groups" />
+              <Tab label="Groups" value="groups" />
             </TabList>
           </Box>
           <TabPanel value="recent" style={{ padding: 0 }}>
@@ -57,27 +59,34 @@ function SidebarContent() {
             >
               <Scrollbar>
                 <List disablePadding component="div">
-                  {messages.map((element) => {
-                    return (
-                      <ItemChat
-                        key={element._id}
-                        user={element.user}
-                        messageUnread={
-                          element.messages.filter(
-                            (f) =>
-                              !["seen", "deleted"].includes(f.status) &&
-                              f.from !== user?._id
-                          ).length
-                        }
-                        messageLasted={
-                          (element.messages &&
-                            element.messages[element.messages.length - 1]
-                              ?.msg) ||
-                          ""
-                        }
-                      />
-                    );
-                  })}
+                  {messages
+                    .filter((f) => f.user)
+                    .map((element) => {
+                      return (
+                        <ItemChat
+                          key={element._id}
+                          user={element.user}
+                          messageUnread={
+                            element.messages.filter(
+                              (f) =>
+                                !["seen", "deleted"].includes(f.status) &&
+                                f.from !== user?._id
+                            ).length
+                          }
+                          messageLasted={
+                            (element.messages &&
+                              element.messages[element.messages.length - 1]
+                                ?.msg) ||
+                            ""
+                          }
+                        />
+                      );
+                    })}
+                  {!messages.filter((f) => f.user)?.length && (
+                    <div className="text-center text-slate-300">
+                      <span className="">Start chatting message first</span>
+                    </div>
+                  )}
                 </List>
               </Scrollbar>
             </div>
@@ -99,7 +108,9 @@ function SidebarContent() {
               <Scrollbar>
                 <List disablePadding component="div">
                   {listUser
-                    .filter((f) => f.name.includes(searchValue))
+                    .filter((f: any) =>
+                      f.name.toLowerCase().includes(searchValue.toLowerCase())
+                    )
                     .map((user) => {
                       return <ItemChat key={user._id} user={user} />;
                     })}
@@ -108,7 +119,31 @@ function SidebarContent() {
             </div>
           </TabPanel>
           <TabPanel value="groups" style={{ padding: 0 }}>
-            Groups
+            <MUITextField
+              value={searchGroup}
+              placeholder="Search name"
+              onChange={(val) => {
+                setSearchGroup(val as string);
+              }}
+            />
+            <div
+              className="mt-2"
+              style={{
+                height: "70vh",
+              }}
+            >
+              <Scrollbar>
+                <List disablePadding component="div">
+                  {groups
+                    .filter((f: any) =>
+                      f.name.toLowerCase().includes(searchGroup.toLowerCase())
+                    )
+                    .map((group: any) => {
+                      return <ItemChat key={group._id} user={group} />;
+                    })}
+                </List>
+              </Scrollbar>
+            </div>
           </TabPanel>
         </TabContext>
       </Box>

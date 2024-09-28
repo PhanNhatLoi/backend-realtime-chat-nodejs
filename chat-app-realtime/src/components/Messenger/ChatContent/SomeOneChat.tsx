@@ -105,7 +105,7 @@ const SomeOneChat = ({ messages }: { messages: messageType[] }) => {
               ? "To day"
               : new Date(msg.createdAt).toDateString()
             : null;
-        if (msg.from === user._id) {
+        if (msg.from === user?._id) {
           return (
             <React.Fragment key={index}>
               {dateTime && <DividerWrapper>{dateTime}</DividerWrapper>}

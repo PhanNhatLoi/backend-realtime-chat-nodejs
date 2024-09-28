@@ -18,7 +18,7 @@ const ListItemWrapper = styled(ListItemButton)(
 
 type Props = {
   selected?: boolean;
-  user: userType;
+  user?: userType;
   messageLasted?: string;
   messageUnread?: number;
 };
@@ -30,13 +30,13 @@ const ItemChat = (props: Props) => {
   return (
     <ListItemWrapper
       className="shadow-md rounded"
-      selected={user._id === currentUserChatting?._id}
+      selected={user?._id === currentUserChatting?._id}
       onClick={() => {
         chooseUserChatting(user);
       }}
     >
       <ListItemAvatar>
-        <MUIAvatar src={user.avatar || ""} />
+        <MUIAvatar src={user?.avatar || ""} />
       </ListItemAvatar>
       <ListItemText
         sx={{
@@ -51,7 +51,7 @@ const ItemChat = (props: Props) => {
           color: `${messageUnread > 0 ? "textPrimary" : "textSecondary"}`,
           noWrap: true,
         }}
-        primary={user.name}
+        primary={user?.name}
         secondary={messageLasted}
       />
       {messageUnread > 0 && (

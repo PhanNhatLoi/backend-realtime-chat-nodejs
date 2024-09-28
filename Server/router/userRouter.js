@@ -22,4 +22,6 @@ router.put("/join_group", auth, userCtrl.joinGroup);
 
 router.put("/leave_group", auth, userCtrl.leaveGroup);
 
+router.put("/block_unblock_user", auth, userCtrl.blockUnBlockUser);
+
 module.exports = router;

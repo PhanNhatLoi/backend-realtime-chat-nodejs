@@ -3,21 +3,21 @@ const mongoose = require("mongoose");
 
 const Group = new mongoose.Schema(
   {
-    manager:{
-        type: ObjectId,
+    manager: {
+      type: ObjectId,
     },
-    name:{
-        type:String,
-        required: [true, "name is required"],
+    name: {
+      type: String,
+      required: [true, "name is required"],
     },
-    deleted:{
-      type:Boolean,
-      default:false
-    }
+    deleted: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,
   }
 );
 
-module.exports = mongoose.model("Groups", Group);
+module.exports = mongoose.model("Group", Group);

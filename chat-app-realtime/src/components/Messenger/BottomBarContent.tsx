@@ -46,8 +46,8 @@ function BottomBarContent() {
       <div className="flex items-center grow">
         <MUIAvatar
           sx={{ display: { xs: "none", sm: "flex" }, mr: 1 }}
-          alt={user.name}
-          src={user.avatar}
+          alt={user?.name}
+          src={user?.avatar}
         />
 
         <MessageInputWrapper
