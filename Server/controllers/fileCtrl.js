@@ -1,7 +1,5 @@
 const cloudinary = require("cloudinary").v2;
-const fs = require("fs");
 const imageFolder = "image";
-const https = require("https");
 const streamifier = require("streamifier");
 
 cloudinary.config({
@@ -25,9 +23,7 @@ const uploadCtrl = {
           if (err) {
             return res.status(500).send(err);
           }
-          console.log(result, 1234);
-          const pathName = result.secure_url.split("/");
-          res.json({ path: pathName[pathName.length - 1] });
+          res.json({ path: result.secure_url });
         }
       );
 
@@ -62,27 +58,6 @@ const uploadCtrl = {
     } catch (err) {
       return res.status(500).json({ msg: err.message });
     }
-  },
-
-  getImage: async (req, res) => {
-    const name = req.params.name;
-    if (!name) return res.status(400).json({ msg: "Image not fount" });
-    const optimizeUrl = cloudinary.url(`${imageFolder}/${name.split(".")[0]}`, {
-      fetch_format: "auto",
-      quality: "auto",
-    });
-    const response = await fetch(optimizeUrl, {
-      agent: new https.Agent({ rejectUnauthorized: false }),
-    });
-    if (!response.ok) {
-      return res.status(400).json({ msg: "Image not fount" });
-    }
-
-    const contentType = response.headers.get("content-type");
-    const buffer = await response.arrayBuffer();
-
-    res.set("Content-Type", contentType);
-    return res.send(Buffer.from(buffer));
   },
 };
 

@@ -1,6 +1,5 @@
 import { Avatar, SxProps, Theme } from "@mui/material";
 import React from "react";
-import { SERVER_URL } from "../../config/constant";
 
 type Props = {
   style?: React.CSSProperties;
@@ -14,11 +13,7 @@ const MUIAvatar = (props: Props) => {
     <Avatar
       variant="rounded"
       style={{ borderRadius: "50%", border: "solid 1.5px gray", ...style }}
-      src={
-        src?.startsWith("/")
-          ? `/images/avatars${src || "/cat-image-1.png"}`
-          : `${SERVER_URL}/file/${src}`
-      }
+      src={src}
       {...rest}
     />
   );

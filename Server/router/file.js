@@ -19,6 +19,4 @@ router.post(
   uploadCtrl.uploadImage
 );
 
-router.get("/:name", uploadCtrl.getImage);
-
 module.exports = router;

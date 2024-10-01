@@ -13,6 +13,22 @@ const pusher = new Pusher({
   cluster: process.env.pusher_cluster,
 });
 
+const arrayAvatar = [
+  "v1727522545/image/cat-image-13.png",
+  "v1727522545/image/cat-image-12.png",
+  "v1727522545/image/cat-image-11.png",
+  "v1727522545/image/cat-image-10.png",
+  "v1727522545/image/cat-image-9.png",
+  "v1727522545/image/cat-image-8.png",
+  "v1727522545/image/cat-image-7.png",
+  "v1727522544/image/cat-image-6.png",
+  "v1727522544/image/cat-image-5.png",
+  "v1727522544/image/cat-image-4.png",
+  "v1727522544/image/cat-image-3.png",
+  "v1727522544/image/cat-image-2.png",
+  "v1727522544/image/cat-image-1.png",
+];
+
 const userCtrl = {
   register: async (req, res) => {
     try {
@@ -24,7 +40,7 @@ const userCtrl = {
       if (!validateEmail(email))
         return res.status(400).json({ errors: { email: "Invalid Email." } });
 
-      const user = await Users.findOne({ email });
+      const user = await Users.findOne({ email: email.toLowerCase() });
       if (user)
         return res
           .status(400)
@@ -39,9 +55,11 @@ const userCtrl = {
 
       const newUser = new Users({
         name,
-        email,
+        email: email.toLowerCase(),
         password: hash,
-        avatar: `/cat-image-${Math.floor(Math.random() * 13) + 1}.png`,
+        avatar: `https://res.cloudinary.com/dkwth9uyw/image/upload/${
+          arrayAvatar[Math.floor(Math.random() * 13)]
+        }`,
       });
 
       pusher.trigger(process.env.pusher_channel, "user-register", {});
@@ -62,7 +80,7 @@ const userCtrl = {
         return res
           .status(400)
           .json({ errors: { email: "please fill in all fields." } });
-      const user = await Users.findOne({ email });
+      const user = await Users.findOne({ email: email.toLowerCase() });
       if (!user)
         return res
           .status(400)

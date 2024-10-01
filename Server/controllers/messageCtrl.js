@@ -90,37 +90,25 @@ const messageCtrl = {
             user: { $arrayElemAt: ["$user", 0] },
           },
         },
-        // {
-        //   $addFields: {
-        //     blocking: {
-        //       $cond: {
-        //         if: { $in: ["$user._id", user.blockIds || []] },
-        //         then: true,
-        //         else: false,
-        //       },
-        //     },
-        //   },
-        // },
-        // {
-        //   $addFields: {
-        //     isBlocked: {
-        //       $cond: {
-        //         if: { $in: [user._id, "$user.blockIds"] },
-        //         then: true,
-        //         else: false,
-        //       },
-        //     },
-        //   },
-        // },
+        {
+          $addFields: {
+            lastedMessage: {
+              $arrayElemAt: [{ $reverseArray: "$messages" }, 0],
+            },
+          },
+        },
         {
           $project: {
             "user.password": 0,
-            "user.blockIds": 0,
-            "user.groupIds": 0,
+          },
+        },
+        {
+          $sort: {
+            "lastedMessage.createdAt": 1,
           },
         },
       ]);
-      res.json(messages);
+      res.status(200).json(messages);
     } catch (err) {
       return res.status(500).json({ msg: err.message });
     }
@@ -183,7 +171,7 @@ const messageCtrl = {
         },
       ]);
 
-      return res.json(...messages);
+      return res.status(200).json(...messages);
     } catch (err) {
       return res.status(500).json({ msg: err.message });
     }
