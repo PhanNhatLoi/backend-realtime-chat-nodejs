@@ -128,8 +128,11 @@ const userCtrl = {
 
   getAllUserInfor: async (req, res) => {
     try {
-      const user = await Users.find({ role: 0 }).select("-password");
-      return res.json({ user: user });
+      const users = await Users.find({
+        role: 0,
+        _id: { $ne: new ObjectId(req.user.id) },
+      }).select("-password");
+      return res.json({ user: users });
     } catch (err) {
       return res.status(500).json({ msg: err.message });
     }
