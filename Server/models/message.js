@@ -23,6 +23,10 @@ const Message = new mongoose.Schema(
       type: String,
       default: "",
     },
+    messageKey: {
+      type: Number,
+      default: null,
+    },
   },
   {
     timestamps: true,

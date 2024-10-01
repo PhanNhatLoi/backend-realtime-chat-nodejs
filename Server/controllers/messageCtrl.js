@@ -15,19 +15,12 @@ const messageCtrl = {
     try {
       const token = getTokenBearer(req);
       const { id } = jwt.decode(token);
-      const { to, msg } = req.body;
-      const users = await Users.find({
-        _id: {
-          $in: [new ObjectId(to), new ObjectId(id)],
-        },
-      });
-
-      console.log(users);
-
+      const { to, msg, messageKey } = req.body;
       const newMsg = new Message({
         from: id,
         to,
         msg,
+        messageKey,
         status: "sent",
       });
 
@@ -45,7 +38,6 @@ const messageCtrl = {
     try {
       const token = getTokenBearer(req);
       const { id } = jwt.decode(token);
-      const user = await Users.findById(id);
       const messages = await Message.aggregate([
         {
           $match: {
