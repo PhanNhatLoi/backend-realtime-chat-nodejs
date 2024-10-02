@@ -156,7 +156,7 @@ const userCtrl = {
           avatar,
         }
       );
-      pusher.trigger(req.user.id, "user-update", {});
+      pusher.trigger(process.env.pusher_channel, "user-update", {});
 
       return res.json({ msg: "update success!" });
     } catch (err) {

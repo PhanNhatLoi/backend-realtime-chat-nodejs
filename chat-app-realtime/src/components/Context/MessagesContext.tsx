@@ -325,8 +325,8 @@ export function MessagesProvider({ children }: Props) {
       });
 
       // event update info from user
-      channelUser.bind("user-update", () => {
-        // fetchUsers();
+      channelApp.bind("user-update", () => {
+        fetchUsers();
       });
 
       // event send-msg from user
