@@ -425,6 +425,7 @@ export function MessagesProvider({ children }: Props) {
         axios.post(
           `${SERVER_URL}/message/send-msg`,
           {
+            messageKey: new Date().getTime(),
             to: message.to,
             msg: message.msg,
           },

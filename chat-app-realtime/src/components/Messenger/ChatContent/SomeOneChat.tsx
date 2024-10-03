@@ -125,7 +125,7 @@ const SomeOneChat = ({ messages }: { messages: messageType[] }) => {
                       style={{ justifyContent: "flex-start" }}
                     >
                       <div className="icon">
-                        <Emoji unified={msg.react} size={20} />
+                        <Emoji unified={msg.react.split("|")[0]} size={20} />
                       </div>
                     </div>
                   )}
@@ -178,7 +178,7 @@ const SomeOneChat = ({ messages }: { messages: messageType[] }) => {
                       style={{ justifyContent: "flex-end" }}
                     >
                       <div className="icon">
-                        <Emoji unified={msg.react} size={20} />
+                        <Emoji unified={msg.react.split("|")[0]} size={20} />
                       </div>
                     </div>
                   )}

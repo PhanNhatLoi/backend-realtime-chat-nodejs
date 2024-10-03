@@ -49,7 +49,7 @@ export default function ActionMenu({
         .post(
           `${SERVER_URL}/message/react-msg/${msg._id}`,
           {
-            react: emoji.unified,
+            react: `${emoji.unified}|${emoji.names[0]}`,
           },
           {
             headers: {
