@@ -20,7 +20,7 @@ const messageCtrl = {
         from: id,
         to,
         msg,
-        messageKey,
+        messageKey: messageKey || new Date().getTime(),
         status: "sent",
       });
 
@@ -126,7 +126,10 @@ const messageCtrl = {
       const messages = await Message.aggregate([
         {
           $match: {
-            $or: [{ from: new ObjectId(userId) }, { to: new ObjectId(userId) }],
+            $or: [
+              { from: new ObjectId(userId), to: new ObjectId(id) },
+              { from: new ObjectId(id), to: new ObjectId(userId) },
+            ],
           },
         },
         {
@@ -179,14 +182,20 @@ const messageCtrl = {
 
   readMsg: async (req, res) => {
     try {
+      const token = getTokenBearer(req);
+      const { id } = jwt.decode(token);
+      const toUserIdObject = new ObjectId(id);
       const userId = req.header("userId");
       if (!userId) return res.json({ msg: "not found" });
-      const userIdObject = new ObjectId(userId);
+      const fromUserIdObject = new ObjectId(userId);
       await Message.updateMany(
-        { from: userIdObject, status: "sent" },
+        { from: fromUserIdObject, to: toUserIdObject, status: "sent" },
         { $set: { status: "seen" } }
       );
-      const lastedMessage = await Message.find({ from: userIdObject });
+      const lastedMessage = await Message.find({
+        from: fromUserIdObject,
+        to: toUserIdObject,
+      });
       pusher.trigger(userId, "read-msg", {
         msg:
           (lastedMessage.length > 0 &&
